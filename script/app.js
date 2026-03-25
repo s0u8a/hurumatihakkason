@@ -13,7 +13,6 @@ spots.forEach(spot => {
 });
 
 let stampCount = spots.filter(s => s.stamped).length;
-// let stampCount = 1;
 
 function renderSpots(containerId) {
   const container = document.getElementById(containerId);
@@ -40,6 +39,9 @@ function getStamp(spot, el) {
     spot.stamped = true;
     el.classList.add('stamped');
     stampCount++;
+    const data = {};
+    spots.forEach(s => { if (s.stamped) data[s.id] = true; });
+    localStorage.setItem('stamps', JSON.stringify(data));
     updateStampCount();
     renderStampGrid();
     const badge = el.querySelector('.stamp-badge');
@@ -80,6 +82,17 @@ function renderStampGrid() {
   }
 }
 
+function showPage(name, tabEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  tabEl.classList.add('active');
+}
+
+function selectRoute(el) {
+  document.querySelectorAll('.route-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
 let mapInitialized = false;
 
 function showPage(name, tabEl) {
@@ -93,17 +106,7 @@ function showPage(name, tabEl) {
     initMap();
   }
 }
-
-function selectRoute(el) {
-  document.querySelectorAll('.route-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-}
-
-// 初期化
-renderSpots('spotList');
-renderSpots('spotListMap');
-renderStampGrid();
-updateStampCount();
+// Leaflet地図の初期化//
 function initMap() {
   const map = L.map('map').setView([37.9175, 139.0375], 15);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -116,3 +119,10 @@ function initMap() {
       .bindPopup(`<b>${spot.icon} ${spot.name}</b><br>${spot.desc}`);
   });
 }
+
+
+// 初期化
+renderSpots('spotList');
+renderSpots('spotListMap');
+renderStampGrid();
+updateStampCount();
