@@ -164,8 +164,8 @@ async function analyzeWithAI(imageUrl) {
   const statusMsg = document.getElementById('upload-status');
 
   // URLを作成（画像URLをエンコードして渡す）
-  const everypixelURL = `https://api.everypixel.com/v1/tag?url=${encodeURIComponent(imageUrl)}`;
-
+  // 「tag」のあとに「s」をつけてみてください
+  const everypixelURL = `https://api.everypixel.com/v1/keywords?url=${encodeURIComponent(imageUrl)}`;
   try {
     const response = await fetch(everypixelURL, {
       method: 'GET',
