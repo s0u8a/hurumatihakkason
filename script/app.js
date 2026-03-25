@@ -1,7 +1,7 @@
 // 1. ハッカソン用設定（直接書き込み）
 const CLOUD_NAME = 'djhjyfe3k';
 const UPLOAD_PRESET = 'my_preset';
-const GOOGLE_API_KEY = 'AIzaSyDAfzLdri00Mghw-5jO6-ubYp66ZHxVJ1A';
+const GOOGLE_API_KEY = 'AIzaSyC5kzwBBS---IAAa_012ce4a2XQdQqDOjw';
 
 // 2. スポットデータ
 const spots = [
