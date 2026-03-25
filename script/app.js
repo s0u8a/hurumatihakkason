@@ -3,8 +3,8 @@ const CLOUD_NAME = 'djhjyfe3k';
 const UPLOAD_PRESET = 'my_preset';
 
 // Everypixel API 設定（名前を統一し、最新のキーを反映）
-const EVERYPIXEL_ID = '2MK18fqJGNqw06Z4luCbaqzS';
-const EVERYPIXEL_SECRET = 'C5UnpEO89Xv6TmYa8a4yLYblGyY9gmKLWEZvbOLF7wAltciA';
+const EVERYPIXEL_ID = 'MVewKYAmCBaGDznld8Y4Kxrw';
+const EVERYPIXEL_SECRET = 'ympL0HqKbM5vkqEVteYnMRMJJ9IMoSksiRKaOR6AcaWQyfJY';
 
 // 2. スポットデータ
 const spots = [
