@@ -123,7 +123,7 @@ async function uploadToCloudinary() {
   statusMsg.textContent = "写真を保存中...";
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', UPLOAD_PRESET);
+  formData.append('upload_preset', UPLOAD_PRESET); // ここで my_preset を使用
 
   try {
     const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
@@ -136,10 +136,13 @@ async function uploadToCloudinary() {
       const imageUrl = data.secure_url;
       previewImg.src = imageUrl;
       previewImg.style.display = 'block';
-      statusMsg.textContent = "AI解析中...";
 
-      // AI解析を呼び出す
-      await analyzeWithAI(imageUrl);
+      // ★ここが重要：3秒待ってからAIにURLを渡す
+      statusMsg.textContent = "AIが画像を読み込んでいます（3秒待機）...";
+      setTimeout(async () => {
+        await analyzeWithAI(imageUrl);
+      }, 3000);
+
     } else {
       statusMsg.textContent = "保存失敗: " + (data.error ? data.error.message : "原因不明");
     }
