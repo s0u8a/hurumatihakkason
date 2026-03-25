@@ -120,9 +120,15 @@ function updateUI() {
 }
 
 // 8. 写真アップロード (Cloudinary)
+<<<<<<< HEAD
 const CLOUD_NAME = 'djhjyfe3k';
 const UPLOAD_PRESET = 'my_preset';
 const GOOGLE_API_KEY = 'AIzaSyDAfzLdri00Mghw-5jO6-ubYp66ZHxVJ1A'; // ★ここにコピーしたキーを貼り付け
+=======
+const CLOUD_NAME = CONFIG.CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = CONFIG.CLOUDINARY_PRESET;
+const GOOGLE_API_KEY = CONFIG.GOOGLE_VISION_API_KEY;
+>>>>>>> 1ea935c1ead9d59fa7eed452867da6f3832a734e
 
 // 8. 写真アップロード (Cloudinary) & AI解析 (Google Vision)
 async function uploadToCloudinary() {
