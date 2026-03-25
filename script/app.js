@@ -210,9 +210,18 @@ async function analyzeWithAI(imageUrl) {
       const descriptions = labels.map(l => l.description.toLowerCase());
       console.log("写っているものリスト:", descriptions);
 
-      // NEXT21っぽいもの（高いビル、空、ガラスなど）が写っていたら
-      if (descriptions.includes("skyscraper") || descriptions.includes("metropolitan area") || descriptions.includes("condominium")) {
-        aiMessage = "🏙️ 高いビルが見えますね。NEXT21周辺の景色としてスタンプを押します！";
+      // NEXT21っぽいもの（高いビル、空、ガラスなど）が写っていたら判定を甘くする
+      const next21Keywords = [
+        "skyscraper", "metropolitan area", "condominium", 
+        "building", "architecture", "tower block", 
+        "commercial building", "city", "mixed-use", "headquarters",
+        "daytime", "sky", "cloud"
+      ];
+      
+      const isNext21 = descriptions.some(desc => next21Keywords.includes(desc));
+
+      if (isNext21) {
+        aiMessage = "🏙️ 高い建物が見えますね。NEXT21周辺の景色としてスタンプを押します！";
         targetSpotId = 3;
       }
     }
