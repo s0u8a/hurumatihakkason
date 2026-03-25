@@ -183,40 +183,55 @@ async function analyzeWithAI(imageUrl) {
       return;
     }
 
-    const res = data.responses;
+
+const res = data.responses;
     const labels = res.labelAnnotations || [];
     const landmarks = res.landmarkAnnotations || [];
     
     let aiMessage = "素敵な写真ですね！古町さんぽを楽しんでください。";
     let targetSpotId = null;
-// --- 判定ロジックの強化版 ---
-if (landmarks.length > 0) {
-  const name = landmarks.description;
-  const lowerName = name.toLowerCase(); // 小文字に統一して比較しやすくする
-  console.log("AIが判定した場所の名前:", name); // ここでコンソールに正解が出ます
 
-  // NEXT21の判定（色々な表記に対応）
-  if (lowerName.includes("next21") || lowerName.includes("next 21") || name.includes("ネクスト")) {
-    aiMessage = "🏙️ 「NEXT21」ですね！古町のランドマークです。スタンプをゲットしました！";
-    targetSpotId = 3; // spots配列の古町通りや、もしNEXT21を個別で作るならそのID
-  } 
-  // 白山神社の判定
-  else if (lowerName.includes("hakusan") || lowerName.includes("shrine") || name.includes("白山")) {
-    aiMessage = "⛩️ AIが「白山神社」を認識しました！古町の守り神ですね。スタンプをゲット！";
-    targetSpotId = 2; // 白山神社のID
-  }
-}
+    // 1. まずは「ランドマーク」で判定
+    if (landmarks.length > 0) {
+      const name = landmarks.description.toLowerCase();
+      console.log("AIが見つけた場所:", name); // 開発者ツールで何て出てるか確認できます
 
-    // 修正ポイント③：特定のワード（ラーメン等）からメッセージを変える
-    const descriptions = labels.map(l => l.description.toLowerCase());
-    if (!targetSpotId) {
-      if (descriptions.some(d => d.includes('noodle') || d.includes('ramen'))) {
-        aiMessage = "🍜 美味しそうなラーメン！古町周辺は背脂ラーメンなども有名ですよ。";
-      } else if (descriptions.some(d => d.includes('shrine') || d.includes('torii'))) {
-        aiMessage = "⛩️ 神社やお寺のようですね。落ち着く風景です。";
+      if (name.includes("next") || name.includes("21") || name.includes("city hall")) {
+        aiMessage = "🏙️ NEXT21ですね！古町のシンボルです。";
+        targetSpotId = 3; // スポットリストのIDに合わせてください
+      } else if (name.includes("hakusan") || name.includes("shrine")) {
+        aiMessage = "⛩️ 白山神社ですね！歴史ある風景です。";
+        targetSpotId = 2;
       }
     }
 
+    // 2. もし場所が特定できなくても「ラベル」で強引に判定（デモで失敗しないための工夫！）
+    if (!targetSpotId) {
+      const descriptions = labels.map(l => l.description.toLowerCase());
+      console.log("写っているものリスト:", descriptions);
+
+      // NEXT21っぽいもの（高いビル、空、ガラスなど）が写っていたら
+      if (descriptions.includes("skyscraper") || descriptions.includes("metropolitan area") || descriptions.includes("condominium")) {
+        aiMessage = "🏙️ 高いビルが見えますね。NEXT21周辺の景色としてスタンプを押します！";
+        targetSpotId = 3; 
+      }
+    }
+
+    // 3. スタンプ処理を実行
+    if (targetSpotId) {
+      const spot = spots.find(s => s.id === targetSpotId);
+      if (spot && !spot.stamped) {
+        spot.stamped = true;
+        const savedData = {};
+        spots.forEach(s => { if (s.stamped) savedData[s.id] = true; });
+        localStorage.setItem('stamps', JSON.stringify(savedData));
+        
+        stampCount = spots.filter(s => s.stamped).length;
+        renderSpots('spotList'); // リスト再描画
+        updateUI(); // スタンプ帳更新
+        aiMessage += " ✨スタンプをゲットしました！";
+      }
+    }
     // 修正ポイント④：スポットが特定できたらスタンプを自動で押す
     if (targetSpotId) {
       const spot = spots.find(s => s.id === targetSpotId);
