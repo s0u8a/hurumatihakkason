@@ -149,54 +149,47 @@ async function uploadToCloudinary() {
   }
 }
 
-// 10. AI解析処理 (Everypixel API版)
+// 10. AI解析処理 (原因特定・待機処理付き)
 async function analyzeWithAI(imageUrl) {
   const statusMsg = document.getElementById('upload-status');
+
+  // Cloudinaryにアップロード直後だと画像がまだ準備できていないことがあるため、3秒待ちます
+  statusMsg.textContent = "AIが画像を読み込んでいます...";
+  await new Promise(resolve => setTimeout(resolve, 3000));
+
   const everypixelURL = `https://api.everypixel.com/v1/keywords?url=${encodeURIComponent(imageUrl)}`;
 
   try {
     const response = await fetch(everypixelURL, {
       method: 'GET',
       headers: {
-        // IDとSecretを使ってBasic認証
         'Authorization': 'Basic ' + btoa(EVERYPIXEL_ID + ':' + EVERYPIXEL_SECRET)
       }
     });
 
     const data = await response.json();
-    console.log("Everypixel応答:", data);
+    console.log("Everypixel最終チェック:", data); // ← コンソールを必ず見てください！
 
     if (data.status === 'ok') {
       const keywords = data.keywords.map(k => k.keyword.toLowerCase());
       let aiMessage = "素敵な写真ですね！";
 
-      // 判定ロジック
       if (keywords.some(k => k.includes('noodle') || k.includes('ramen'))) {
         aiMessage = "🍜 おっ、古町の美味しそうなラーメンを認識しました！";
       } else if (keywords.some(k => k.includes('shrine') || k.includes('temple') || k.includes('torii'))) {
         aiMessage = "⛩️ 歴史を感じる建物ですね。古町さんぽの思い出にぴったりです！";
       } else if (keywords.some(k => k.includes('food') || k.includes('dish'))) {
-        aiMessage = "😋 美味しそうなグルメ写真ですね！お味はいかがでしたか？";
-      } else if (keywords.some(k => k.includes('building') || k.includes('town'))) {
-        aiMessage = "🏙️ 古町の街並みが綺麗に写っていますね。";
+        aiMessage = "😋 美味しそうなグルメ写真ですね！";
       }
 
       statusMsg.innerHTML = `<span style="color:red; font-weight:bold;">AIガイド：</span> ${aiMessage}`;
     } else {
-      statusMsg.textContent = "AI解析エラー: " + (data.message || "認証失敗");
+      // ★ここでエラーメッセージを具体的に出します
+      statusMsg.textContent = `解析エラー: ${data.message || '画像が読み込めません'}`;
+      console.error("エラー詳細:", data);
     }
   } catch (error) {
-    console.error("AI解析エラー:", error);
-    statusMsg.textContent = "解析中にエラーが発生しました。";
+    console.error("通信エラー:", error);
+    statusMsg.textContent = "ネットワークエラーが発生しました。";
   }
 }
-
-function selectRoute(el) {
-  document.querySelectorAll('.route-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-}
-
-window.onload = () => {
-  renderSpots('spotList');
-  updateUI();
-};
