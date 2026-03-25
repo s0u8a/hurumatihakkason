@@ -188,7 +188,7 @@ async function analyzeWithAI(imageUrl) {
     requests: [{
       image: { source: { imageUri: imageUrl } },
       features: [
-        { type: 'LABEL_DETECTION', maxResults: 10 },
+        { type: 'LABEL_DETECTION', maxResults: 30 }, // より多くの単語を検出させるため大きく増やす
         { type: 'LANDMARK_DETECTION', maxResults: 5 }
       ]
     }]
