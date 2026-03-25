@@ -1,0 +1,569 @@
+:root {
+  --red: #C0392B;
+  --red-dark: #922B21;
+  --cream: #FBF5E6;
+  --ink: #1a1208;
+  --gold: #B8860B;
+  --warm-gray: #8B7355;
+  --paper: #F5EDD6;
+  --stamp-green: #2D6A4F;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ヘッダー */
+header {
+  background: var(--red);
+  color: white;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+}
+
+.logo {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-icon { font-size: 1.4rem; }
+
+.stamp-count {
+  background: white;
+  color: var(--red);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* タブナビ */
+.tabs {
+  display: flex;
+  background: var(--red-dark);
+  border-bottom: 2px solid var(--gold);
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  color: rgba(255,255,255,0.65);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border: none;
+  background: none;
+}
+
+.tab.active {
+  color: white;
+  border-bottom: 3px solid var(--gold);
+  background: rgba(255,255,255,0.08);
+}
+
+.tab-icon { display: block; font-size: 1.2rem; margin-bottom: 2px; }
+
+/* ページ */
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ヒーローバナー */
+.hero {
+  background: linear-gradient(135deg, var(--red) 0%, #8B1A0E 100%);
+  color: white;
+  padding: 28px 20px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+}
+
+.hero::after {
+  content: '古';
+  position: absolute;
+  right: 20px; top: 10px;
+  font-family: 'Shippori Mincho', serif;
+  font-size: 6rem;
+  font-weight: 900;
+  color: rgba(255,255,255,0.07);
+  line-height: 1;
+}
+
+.hero-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.hero-title {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 10px;
+}
+
+.hero-sub {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.6;
+}
+
+.progress-bar-wrap {
+  margin-top: 18px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 10px;
+  width: 20%;
+  transition: width 1s ease;
+}
+
+.progress-label {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.7);
+}
+
+/* セクション */
+.section { padding: 20px 16px; }
+
+.section-title {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--red);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--red), transparent);
+}
+
+/* ルートカード */
+.route-cards {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+}
+
+.route-cards::-webkit-scrollbar { display: none; }
+
+.route-card {
+  min-width: 160px;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  flex-shrink: 0;
+  border: 2px solid transparent;
+}
+
+.route-card:hover, .route-card.selected {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(192,57,43,0.2);
+  border-color: var(--red);
+}
+
+.route-card-img {
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+}
+
+.route-card-body { padding: 10px; }
+
+.route-card-name {
+  font-family: 'Shippori Mincho', serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  margin-bottom: 4px;
+}
+
+.route-card-meta {
+  font-size: 0.72rem;
+  color: var(--warm-gray);
+}
+
+.route-card-tag {
+  display: inline-block;
+  background: var(--cream);
+  color: var(--red);
+  border: 1px solid var(--red);
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-top: 5px;
+  letter-spacing: 0.05em;
+}
+
+/* スポットリスト */
+.spot-list { display: flex; flex-direction: column; gap: 10px; }
+
+.spot-item {
+  background: white;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  cursor: pointer;
+  transition: transform 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+
+.spot-item::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--red);
+  border-radius: 4px 0 0 4px;
+}
+
+.spot-item:hover { transform: translateX(3px); }
+.spot-item.stamped::before { background: var(--stamp-green); }
+
+.spot-icon {
+  width: 50px; height: 50px;
+  border-radius: 10px;
+  background: var(--cream);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.7rem;
+  flex-shrink: 0;
+}
+
+.spot-info { flex: 1; }
+
+.spot-name {
+  font-family: 'Shippori Mincho', serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.spot-desc {
+  font-size: 0.78rem;
+  color: var(--warm-gray);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.spot-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+
+.spot-tag {
+  background: var(--cream);
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.65rem;
+  color: var(--warm-gray);
+}
+
+.stamp-badge {
+  position: absolute;
+  top: 10px; right: 10px;
+  background: var(--stamp-green);
+  color: white;
+  border-radius: 50%;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.3s;
+}
+
+.spot-item.stamped .stamp-badge {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* スタンプページ */
+.stamp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  padding: 16px;
+}
+
+.stamp-cell {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  border: 2px dashed #ccc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.stamp-cell.earned {
+  border: 2px solid var(--stamp-green);
+  background: #f0faf4;
+}
+
+.stamp-cell.earned::after {
+  content: '済';
+  position: absolute;
+  bottom: 4px; right: 6px;
+  font-size: 0.6rem;
+  color: var(--stamp-green);
+  font-weight: 700;
+}
+
+.stamp-emoji { font-size: 1.8rem; margin-bottom: 4px; }
+
+.stamp-name {
+  font-size: 0.6rem;
+  color: var(--warm-gray);
+  text-align: center;
+  padding: 0 4px;
+  font-weight: 700;
+}
+
+.stamp-number {
+  position: absolute;
+  top: 5px; left: 7px;
+  font-size: 0.6rem;
+  color: #bbb;
+  font-weight: 700;
+}
+
+/* マップ */
+.map-placeholder {
+  margin: 16px;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  border: 3px solid white;
+}
+
+.map-mock {
+  background: #e8dfc8;
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.road-h {
+  position: absolute;
+  left: 0; right: 0;
+  height: 8px;
+  background: white;
+  opacity: 0.7;
+}
+
+.road-v {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 8px;
+  background: white;
+  opacity: 0.7;
+}
+
+.map-pin {
+  position: absolute;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.map-pin:hover { transform: scale(1.3) translateY(-4px); }
+
+.map-label {
+  position: absolute;
+  background: var(--red);
+  color: white;
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.map-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.4));
+  padding: 12px;
+  color: white;
+  font-size: 0.75rem;
+}
+
+/* クーポン */
+.coupon-list { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+.coupon-card {
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.09);
+  display: flex;
+  align-items: stretch;
+  position: relative;
+}
+
+.coupon-left {
+  background: var(--red);
+  width: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 8px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.coupon-stamp-req {
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.coupon-stamp-label {
+  font-size: 0.6rem;
+  opacity: 0.85;
+  text-align: center;
+  margin-top: 2px;
+}
+
+.coupon-right { padding: 14px; flex: 1; }
+
+.coupon-shop {
+  font-size: 0.72rem;
+  color: var(--warm-gray);
+  margin-bottom: 3px;
+}
+
+.coupon-title {
+  font-family: 'Shippori Mincho', serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+
+.coupon-status {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.coupon-status.available { background: #e8f5e9; color: var(--stamp-green); }
+.coupon-status.locked { background: #f5f5f5; color: #aaa; }
+
+.coupon-card::before {
+  content: '';
+  position: absolute;
+  left: 70px;
+  top: 0; bottom: 0;
+  border-left: 2px dashed #eee;
+}
+
+/* その他 */
+.notice {
+  background: linear-gradient(90deg, #FFF3CD, #FFEAA7);
+  border-left: 4px solid var(--gold);
+  padding: 10px 14px;
+  margin: 0 16px 16px;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.78rem;
+  color: #7D6608;
+  font-weight: 700;
+}
+
+.cta-btn {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 0 16px 16px;
+  padding: 14px;
+  background: var(--red);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  box-shadow: 0 4px 12px rgba(192,57,43,0.35);
+}
+
+.cta-btn:active { transform: scale(0.98); background: var(--red-dark); }
+
+.bottom-space { height: 20px; }
