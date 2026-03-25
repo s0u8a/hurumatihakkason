@@ -128,116 +128,123 @@ async function uploadToCloudinary() {
     return;
   }
 
-  statusMsg.textContent = "写真を保存中...";
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', UPLOAD_PRESET);
+  statusMsg.textContent = "写真を読み込んでいます...";
 
-  try {
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+  // ファイルをBase64に変換してプレビュー＆AI解析に直接渡す（安定化）
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64Data = e.target.result;
+    previewImg.src = base64Data;
+    previewImg.style.display = 'block';
+
+    // Cloudinaryへアップロード（裏で実行しておく）
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+    fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
       method: 'POST',
       body: formData
-    });
-    const data = await response.json();
+    }).catch(err => console.error("Cloudinary error:", err));
 
-    if (data.secure_url) {
-      const imageUrl = data.secure_url;
-      previewImg.src = imageUrl;
-      previewImg.style.display = 'block';
-      statusMsg.textContent = "AIが写真を解析しています...";
-      await analyzeWithAI(imageUrl);
-    } else {
-      statusMsg.textContent = "保存失敗: " + (data.error ? data.error.message : "原因不明");
-    }
-  } catch (error) {
-    console.error(error);
-    statusMsg.textContent = "エラーが発生しました";
-  }
+    // Vision API用（'data:image/jpeg;base64,' 等のプレフィックスを除外）
+    const base64Image = base64Data.split(',')[1];
+
+    statusMsg.textContent = "AIが写真を解析しています...";
+    await analyzeWithAI(base64Image);
+  };
+  reader.readAsDataURL(file);
 }
 
 // 10. AI解析処理（修正版：ランドマーク検出とスタンプ自動付与を追加）
-async function analyzeWithAI(imageUrl) {
+async function analyzeWithAI(base64Image) {
   const statusMsg = document.getElementById('upload-status');
   const visionURL = `https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_API_KEY}`;
 
   // 修正ポイント①：LABELだけでなくLANDMARK_DETECTIONを追加
   const requestData = {
     requests: [{
-      image: { source: { imageUri: imageUrl } },
-      features: [
+      image: { content: base64Image }, // URLの代わりにコンテンツを直接送る
         { type: 'LABEL_DETECTION', maxResults: 10 },
-        { type: 'LANDMARK_DETECTION', maxResults: 5 }
-      ]
-    }]
-  };
+    { type: 'LANDMARK_DETECTION', maxResults: 5 }
+    ]
+  }]
+};
 
-  try {
-    const response = await fetch(visionURL, {
-      method: 'POST',
-      body: JSON.stringify(requestData)
-    });
-    const data = await response.json();
+try {
+  const response = await fetch(visionURL, {
+    method: 'POST',
+    body: JSON.stringify(requestData)
+  });
+  const data = await response.json();
+  console.log("Vision API Response:", data); // デバッグ用
 
-    if (!response.ok || data.error) {
-      statusMsg.textContent = "AI解析に失敗しました。";
-      return;
-    }
-
-
-const res = data.responses[0];
-    const labels = res.labelAnnotations || [];
-    const landmarks = res.landmarkAnnotations || [];
-    
-    let aiMessage = "素敵な写真ですね！古町さんぽを楽しんでください。";
-    let targetSpotId = null;
-
-    // 1. まずは「ランドマーク」で判定
-    if (landmarks.length > 0) {
-      const name = landmarks[0].description.toLowerCase();
-      console.log("AIが見つけた場所:", name); // 開発者ツールで何て出てるか確認できます
-
-      if (name.includes("next") || name.includes("21") || name.includes("city hall")) {
-        aiMessage = "🏙️ NEXT21ですね！古町のシンボルです。";
-        targetSpotId = 3; // スポットリストのIDに合わせてください
-      } else if (name.includes("hakusan") || name.includes("shrine")) {
-        aiMessage = "⛩️ 白山神社ですね！歴史ある風景です。";
-        targetSpotId = 2;
-      }
-    }
-
-    // 2. もし場所が特定できなくても「ラベル」で強引に判定（デモで失敗しないための工夫！）
-    if (!targetSpotId) {
-      const descriptions = labels.map(l => l.description.toLowerCase());
-      console.log("写っているものリスト:", descriptions);
-
-      // NEXT21っぽいもの（高いビル、空、ガラスなど）が写っていたら
-      if (descriptions.includes("skyscraper") || descriptions.includes("metropolitan area") || descriptions.includes("condominium")) {
-        aiMessage = "🏙️ 高いビルが見えますね。NEXT21周辺の景色としてスタンプを押します！";
-        targetSpotId = 3; 
-      }
-    }
-
-    // 3. スタンプ処理を実行
-    if (targetSpotId) {
-      const spot = spots.find(s => s.id === targetSpotId);
-      if (spot && !spot.stamped) {
-        spot.stamped = true;
-        // 保存用データを作成
-        const savedData = {};
-        spots.forEach(s => { if (s.stamped) savedData[s.id] = true; });
-        localStorage.setItem('stamps', JSON.stringify(savedData));
-        
-        // UI（画面）を更新
-        stampCount = spots.filter(s => s.stamped).length;
-        renderSpots('spotList'); // リスト再描画
-        updateUI(); // スタンプ帳更新
-        aiMessage += " ✨スタンプを1個ゲットしました！";
-      }
-    }
-
-    statusMsg.innerHTML = `<span style="color:var(--red); font-weight:bold;">AIガイド：</span> ${aiMessage}`;
-  } catch (error) {
-    console.error("AI解析エラー:", error);
-    statusMsg.textContent = "解析中にエラーが発生しました。";
+  if (!response.ok || data.error) {
+    statusMsg.textContent = "AI解析に失敗しました。";
+    return;
   }
+
+  const res = data.responses[0];
+
+  // 画像送信エラーがあるかをチェック
+  if (res.error) {
+    console.error("画像解析エラー:", res.error);
+    statusMsg.innerHTML = `<span style="color:red;">エラー：画像の情報をうまく読み取れませんでした。</span>`;
+    return;
+  }
+
+  const labels = res.labelAnnotations || [];
+  const landmarks = res.landmarkAnnotations || [];
+
+  let aiMessage = "素敵な写真ですね！古町さんぽを楽しんでください。";
+  let targetSpotId = null;
+
+  // 1. まずは「ランドマーク」で判定
+  if (landmarks.length > 0) {
+    const name = landmarks[0].description.toLowerCase();
+    console.log("AIが見つけた場所:", name); // 開発者ツールで何て出てるか確認できます
+
+    if (name.includes("next") || name.includes("21") || name.includes("city hall")) {
+      aiMessage = "🏙️ NEXT21ですね！古町のシンボルです。";
+      targetSpotId = 3; // スポットリストのIDに合わせてください
+    } else if (name.includes("hakusan") || name.includes("shrine")) {
+      aiMessage = "⛩️ 白山神社ですね！歴史ある風景です。";
+      targetSpotId = 2;
+    }
+  }
+
+  // 2. もし場所が特定できなくても「ラベル」で強引に判定（デモで失敗しないための工夫！）
+  if (!targetSpotId) {
+    const descriptions = labels.map(l => l.description.toLowerCase());
+    console.log("写っているものリスト:", descriptions);
+
+    // NEXT21っぽいもの（高いビル、空、ガラスなど）が写っていたら
+    if (descriptions.includes("skyscraper") || descriptions.includes("metropolitan area") || descriptions.includes("condominium")) {
+      aiMessage = "🏙️ 高いビルが見えますね。NEXT21周辺の景色としてスタンプを押します！";
+      targetSpotId = 3;
+    }
+  }
+
+  // 3. スタンプ処理を実行
+  if (targetSpotId) {
+    const spot = spots.find(s => s.id === targetSpotId);
+    if (spot && !spot.stamped) {
+      spot.stamped = true;
+      // 保存用データを作成
+      const savedData = {};
+      spots.forEach(s => { if (s.stamped) savedData[s.id] = true; });
+      localStorage.setItem('stamps', JSON.stringify(savedData));
+
+      // UI（画面）を更新
+      stampCount = spots.filter(s => s.stamped).length;
+      renderSpots('spotList'); // リスト再描画
+      updateUI(); // スタンプ帳更新
+      aiMessage += " ✨スタンプを1個ゲットしました！";
+    }
+  }
+
+  statusMsg.innerHTML = `<span style="color:var(--red); font-weight:bold;">AIガイド：</span> ${aiMessage}`;
+} catch (error) {
+  console.error("AI解析エラー:", error);
+  statusMsg.textContent = "解析中にエラーが発生しました。";
+}
 }
