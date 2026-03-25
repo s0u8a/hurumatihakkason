@@ -184,7 +184,7 @@ async function analyzeWithAI(imageUrl) {
     }
 
 
-const res = data.responses;
+const res = data.responses[0];
     const labels = res.labelAnnotations || [];
     const landmarks = res.landmarkAnnotations || [];
     
@@ -193,7 +193,7 @@ const res = data.responses;
 
     // 1. まずは「ランドマーク」で判定
     if (landmarks.length > 0) {
-      const name = landmarks.description.toLowerCase();
+      const name = landmarks[0].description.toLowerCase();
       console.log("AIが見つけた場所:", name); // 開発者ツールで何て出てるか確認できます
 
       if (name.includes("next") || name.includes("21") || name.includes("city hall")) {
@@ -222,30 +222,15 @@ const res = data.responses;
       const spot = spots.find(s => s.id === targetSpotId);
       if (spot && !spot.stamped) {
         spot.stamped = true;
+        // 保存用データを作成
         const savedData = {};
         spots.forEach(s => { if (s.stamped) savedData[s.id] = true; });
         localStorage.setItem('stamps', JSON.stringify(savedData));
         
+        // UI（画面）を更新
         stampCount = spots.filter(s => s.stamped).length;
         renderSpots('spotList'); // リスト再描画
         updateUI(); // スタンプ帳更新
-        aiMessage += " ✨スタンプをゲットしました！";
-      }
-    }
-    // 修正ポイント④：スポットが特定できたらスタンプを自動で押す
-    if (targetSpotId) {
-      const spot = spots.find(s => s.id === targetSpotId);
-      if (spot && !spot.stamped) {
-        spot.stamped = true;
-        // 保存用データを作成
-        const data = {};
-        spots.forEach(s => { if (s.stamped) data[s.id] = true; });
-        localStorage.setItem('stamps', JSON.stringify(data));
-        
-        // UI（画面）を更新
-        stampCount = spots.filter(s => s.stamped).length;
-        renderSpots('spotList');
-        updateUI();
         aiMessage += " ✨スタンプを1個ゲットしました！";
       }
     }
