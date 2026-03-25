@@ -74,7 +74,8 @@ function renderSpots(containerId) {
       </div>
       <div class="stamp-badge">✓</div>
     `;
-    div.onclick = () => getStamp(spot, div);
+    // AIの写真判定のみでスタンプを獲得させるため、リストタップでの直接スタンプ付与を無効化
+    // div.onclick = () => getStamp(spot, div);
     container.appendChild(div);
   });
 }
