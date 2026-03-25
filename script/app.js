@@ -1,10 +1,7 @@
-// 1. ハッカソン用設定
+// 1. ハッカソン用設定（直接書き込み）
 const CLOUD_NAME = 'djhjyfe3k';
 const UPLOAD_PRESET = 'my_preset';
-
-// Everypixel API 設定（名前を統一し、最新のキーを反映）
-const EVERYPIXEL_ID = 'MVewKYAmCBaGDznld8Y4Kxrw';
-const EVERYPIXEL_SECRET = 'ympL0HqKbM5vkqEVteYnMRMJJ9IMoSksiRKaOR6AcaWQyfJY';
+const GOOGLE_API_KEY = 'AIzaSyDAfzLdri00Mghw-5jO6-ubYp66ZHxVJ1A';
 
 // 2. スポットデータ
 const spots = [
@@ -15,9 +12,12 @@ const spots = [
   { id: 5, name: "新潟県政記念館", icon: "🏛️", desc: "明治時代の洋風建築。国重要文化財で古町の歴史を伝える。", tags: ["歴史", "建築"], stamped: false, lat: 37.9190, lng: 139.0360 }
 ];
 
-// 3. 状態管理と復元
+// 3. localStorageからスタンプ状態を復元
 const saved = JSON.parse(localStorage.getItem('stamps') || '{}');
-spots.forEach(spot => { if (saved[spot.id]) spot.stamped = true; });
+spots.forEach(spot => {
+  if (saved[spot.id]) spot.stamped = true;
+});
+
 let stampCount = spots.filter(s => s.stamped).length;
 let mapInitialized = false;
 
@@ -61,6 +61,7 @@ function renderSpots(containerId) {
       <div class="spot-info">
         <div class="spot-name">${spot.name}</div>
         <div class="spot-desc">${spot.desc}</div>
+        <div class="spot-tags">${spot.tags.map(t => `<span class="spot-tag">${t}</span>`).join('')}</div>
       </div>
       <div class="stamp-badge">✓</div>
     `;
@@ -84,13 +85,9 @@ function getStamp(spot, el) {
 
 // 8. UIの更新
 function updateUI() {
-  const countHeader = document.getElementById('stampCountHeader');
-  const progressText = document.getElementById('progressText');
-  const progressBar = document.getElementById('progressBar');
-
-  if (countHeader) countHeader.textContent = stampCount;
-  if (progressText) progressText.textContent = `${stampCount}/9`;
-  if (progressBar) progressBar.style.width = (stampCount / 9 * 100) + '%';
+  document.getElementById('stampCountHeader').textContent = stampCount;
+  document.getElementById('progressText').textContent = `${stampCount}/9`;
+  document.getElementById('progressBar').style.width = (stampCount / 9 * 100) + '%';
 
   const grid = document.getElementById('stampGrid');
   if (!grid) return;
@@ -106,12 +103,23 @@ function updateUI() {
     `;
     grid.appendChild(cell);
   });
+
+  for (let i = spots.length; i < 9; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'stamp-cell';
+    cell.innerHTML = `
+      <div class="stamp-number">${i + 1}</div>
+      <div class="stamp-emoji" style="opacity:0.3">📍</div>
+      <div class="stamp-name" style="color:#ccc">スポット追加予定</div>
+    `;
+    grid.appendChild(cell);
+  }
 }
 
 // 9. 写真アップロード (Cloudinary) & AI解析
 async function uploadToCloudinary() {
   const fileInput = document.getElementById('photo-input');
-  const file = fileInput.files[0]; // 末尾に[0]をつけるだけ！
+  const file = fileInput.files[0]; // 修正: 最初のファイルオブジェクトを取得する
   const statusMsg = document.getElementById('upload-status');
   const previewImg = document.getElementById('photo-preview');
 
@@ -123,7 +131,7 @@ async function uploadToCloudinary() {
   statusMsg.textContent = "写真を保存中...";
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', UPLOAD_PRESET); // ここで my_preset を使用
+  formData.append('upload_preset', UPLOAD_PRESET);
 
   try {
     const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
@@ -136,63 +144,76 @@ async function uploadToCloudinary() {
       const imageUrl = data.secure_url;
       previewImg.src = imageUrl;
       previewImg.style.display = 'block';
-
-      // ★ここが重要：3秒待ってからAIにURLを渡す
-      statusMsg.textContent = "AIが画像を読み込んでいます（3秒待機）...";
-      setTimeout(async () => {
-        await analyzeWithAI(imageUrl);
-      }, 3000);
-
+      statusMsg.textContent = "AIが写真を解析しています...";
+      await analyzeWithAI(imageUrl);
     } else {
       statusMsg.textContent = "保存失敗: " + (data.error ? data.error.message : "原因不明");
     }
   } catch (error) {
     console.error(error);
-    statusMsg.textContent = "通信エラーが発生しました";
+    statusMsg.textContent = "エラーが発生しました";
   }
 }
 
-// 10. AI解析処理 (原因特定・待機処理付き)
+// 10. AI解析処理
 async function analyzeWithAI(imageUrl) {
   const statusMsg = document.getElementById('upload-status');
+  const visionURL = `https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_API_KEY}`;
 
-  // Cloudinaryにアップロード直後だと画像がまだ準備できていないことがあるため、3秒待ちます
-  statusMsg.textContent = "AIが画像を読み込んでいます...";
-  await new Promise(resolve => setTimeout(resolve, 3000));
-
-  const everypixelURL = `https://api.everypixel.com/v1/keywords?url=${encodeURIComponent(imageUrl)}`;
+  const requestData = {
+    requests: [{
+      image: { source: { imageUri: imageUrl } },
+      features: [{ type: 'LABEL_DETECTION', maxResults: 10 }]
+    }]
+  };
 
   try {
-    const response = await fetch(everypixelURL, {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Basic ' + btoa(EVERYPIXEL_ID + ':' + EVERYPIXEL_SECRET)
-      }
+    const response = await fetch(visionURL, {
+      method: 'POST',
+      body: JSON.stringify(requestData)
     });
-
     const data = await response.json();
-    console.log("Everypixel最終チェック:", data); // ← コンソールを必ず見てください！
 
-    if (data.status === 'ok') {
-      const keywords = data.keywords.map(k => k.keyword.toLowerCase());
-      let aiMessage = "素敵な写真ですね！";
-
-      if (keywords.some(k => k.includes('noodle') || k.includes('ramen'))) {
-        aiMessage = "🍜 おっ、古町の美味しそうなラーメンを認識しました！";
-      } else if (keywords.some(k => k.includes('shrine') || k.includes('temple') || k.includes('torii'))) {
-        aiMessage = "⛩️ 歴史を感じる建物ですね。古町さんぽの思い出にぴったりです！";
-      } else if (keywords.some(k => k.includes('food') || k.includes('dish'))) {
-        aiMessage = "😋 美味しそうなグルメ写真ですね！";
-      }
-
-      statusMsg.innerHTML = `<span style="color:red; font-weight:bold;">AIガイド：</span> ${aiMessage}`;
-    } else {
-      // ★ここでエラーメッセージを具体的に出します
-      statusMsg.textContent = `解析エラー: ${data.message || '画像が読み込めません'}`;
-      console.error("エラー詳細:", data);
+    if (!response.ok || data.error) {
+      console.error("Vision API Error:", data.error);
+      statusMsg.textContent = "AI解析に失敗しました（403エラー: APIキーが無効か制限されています）。";
+      return;
     }
+
+    const labels = data.responses && data.responses[0] ? data.responses[0].labelAnnotations : null;
+
+    if (!labels) {
+      statusMsg.textContent = "解析結果が得られませんでした。";
+      return;
+    }
+
+    const descriptions = labels.map(l => l.description.toLowerCase());
+    let aiMessage = "素敵な写真ですね！";
+
+    if (descriptions.some(d => d.includes('noodle') || d.includes('ramen'))) {
+      aiMessage = "🍜 おっ、古町の美味しそうなラーメンを認識しました！";
+    } else if (descriptions.some(d => d.includes('shrine') || d.includes('temple') || d.includes('torii'))) {
+      aiMessage = "⛩️ 歴史を感じる建物ですね。古町さんぽの思い出にぴったりです！";
+    } else if (descriptions.some(d => d.includes('food') || d.includes('dish'))) {
+      aiMessage = "😋 美味しそうなグルメ写真ですね！お味はいかがでしたか？";
+    } else if (descriptions.some(d => d.includes('building') || d.includes('town'))) {
+      aiMessage = "🏙️ 古町の街並みが綺麗に写っていますね。";
+    }
+
+    statusMsg.innerHTML = `<span style="color:var(--red); font-weight:bold;">AIガイド：</span> ${aiMessage}`;
   } catch (error) {
-    console.error("通信エラー:", error);
-    statusMsg.textContent = "ネットワークエラーが発生しました。";
+    console.error("AI解析エラー:", error);
+    statusMsg.textContent = "解析中にエラーが発生しました。";
   }
 }
+
+function selectRoute(el) {
+  document.querySelectorAll('.route-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+window.onload = () => {
+  renderSpots('spotList');
+  renderSpots('spotListMap');
+  updateUI();
+};
