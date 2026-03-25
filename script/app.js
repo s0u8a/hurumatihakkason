@@ -48,7 +48,7 @@ function renderSpots(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
   container.innerHTML = '';
-  
+
   spots.forEach(spot => {
     const div = document.createElement('div');
     div.className = 'spot-item' + (spot.stamped ? ' stamped' : '');
@@ -72,12 +72,12 @@ function getStamp(spot, el) {
     spot.stamped = true;
     el.classList.add('stamped');
     stampCount++;
-    
+
     // 保存
     const data = {};
     spots.forEach(s => { if (s.stamped) data[s.id] = true; });
     localStorage.setItem('stamps', JSON.stringify(data));
-    
+
     updateUI();
   }
 }
@@ -88,12 +88,12 @@ function updateUI() {
   document.getElementById('stampCountHeader').textContent = stampCount;
   document.getElementById('progressText').textContent = `${stampCount}/9`;
   document.getElementById('progressBar').style.width = (stampCount / 9 * 100) + '%';
-  
+
   // スタンプカードのグリッド描画
   const grid = document.getElementById('stampGrid');
   if (!grid) return;
   grid.innerHTML = '';
-  
+
   // スポットがある分だけ描画
   spots.forEach((spot, i) => {
     const cell = document.createElement('div');
@@ -105,7 +105,7 @@ function updateUI() {
     `;
     grid.appendChild(cell);
   });
-  
+
   // 空枠（残り9枠まで）
   for (let i = spots.length; i < 9; i++) {
     const cell = document.createElement('div');
@@ -122,10 +122,12 @@ function updateUI() {
 // 8. 写真アップロード (Cloudinary)
 const CLOUD_NAME = 'djhjyfe3k';
 const UPLOAD_PRESET = 'my_preset';
+const GOOGLE_API_KEY = 'AIzaSyDAfzLdri00Mghw-5jO6-ubYp66ZHxVJ1A'; // ★ここにコピーしたキーを貼り付け
 
+// 8. 写真アップロード (Cloudinary) & AI解析 (Google Vision)
 async function uploadToCloudinary() {
   const fileInput = document.getElementById('photo-input');
-  const file = fileInput.files[0];
+  const file = fileInput.files;
   const statusMsg = document.getElementById('upload-status');
   const previewImg = document.getElementById('photo-preview');
 
@@ -134,12 +136,13 @@ async function uploadToCloudinary() {
     return;
   }
 
-  statusMsg.textContent = "アップロード中...";
+  statusMsg.textContent = "写真を保存中...";
   const formData = new FormData();
   formData.append('file', file);
   formData.append('upload_preset', UPLOAD_PRESET);
 
   try {
+    // --- 1. Cloudinaryへアップロード ---
     const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
       method: 'POST',
       body: formData
@@ -147,14 +150,68 @@ async function uploadToCloudinary() {
     const data = await response.json();
 
     if (data.secure_url) {
-      statusMsg.innerHTML = `保存完了！`;
-      previewImg.src = data.secure_url;
+      const imageUrl = data.secure_url;
+      previewImg.src = imageUrl;
       previewImg.style.display = 'block';
+
+      statusMsg.textContent = "AIが写真を解析しています...";
+
+      // --- 2. Google Vision APIで解析 ---
+      await analyzeWithAI(imageUrl);
+
     } else {
-      statusMsg.textContent = "失敗: " + (data.error ? data.error.message : "原因不明");
+      statusMsg.textContent = "保存失敗: " + (data.error ? data.error.message : "原因不明");
     }
   } catch (error) {
-    statusMsg.textContent = "通信エラーが発生しました";
+    console.error(error);
+    statusMsg.textContent = "エラーが発生しました";
+  }
+}
+
+// 9. Google Vision API 解析処理
+async function analyzeWithAI(imageUrl) {
+  const statusMsg = document.getElementById('upload-status');
+  const visionURL = `https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_API_KEY}`;
+
+  const requestData = {
+    requests: [{
+      image: { source: { imageUri: imageUrl } },
+      features: [{ type: 'LABEL_DETECTION', maxResults: 10 }]
+    }]
+  };
+
+  try {
+    const response = await fetch(visionURL, {
+      method: 'POST',
+      body: JSON.stringify(requestData)
+    });
+    const data = await response.json();
+    const labels = data.responses.labelAnnotations;
+
+    if (!labels) {
+      statusMsg.textContent = "解析結果が得られませんでした。";
+      return;
+    }
+
+    // AIの解析結果からメッセージを作る
+    const descriptions = labels.map(l => l.description.toLowerCase());
+    let aiMessage = "素敵な写真ですね！";
+
+    if (descriptions.some(d => d.includes('noodle') || d.includes('ramen'))) {
+      aiMessage = "🍜 おっ、古町の美味しそうなラーメンを認識しました！";
+    } else if (descriptions.some(d => d.includes('shrine') || d.includes('temple') || d.includes('torii'))) {
+      aiMessage = "⛩️ 歴史を感じる建物ですね。古町さんぽの思い出にぴったりです！";
+    } else if (descriptions.some(d => d.includes('food') || d.includes('dish'))) {
+      aiMessage = "😋 美味しそうなグルメ写真ですね！お味はいかがでしたか？";
+    } else if (descriptions.some(d => d.includes('building') || d.includes('town'))) {
+      aiMessage = "🏙️ 古町の街並みが綺麗に写っていますね。";
+    }
+
+    statusMsg.innerHTML = `<span style="color:var(--red); font-weight:bold;">AIガイド：</span> ${aiMessage}`;
+
+  } catch (error) {
+    console.error("AI解析エラー:", error);
+    statusMsg.textContent = "解析中にエラーが発生しました。";
   }
 }
 
