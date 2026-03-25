@@ -22,6 +22,14 @@ spots.forEach(spot => {
 let stampCount = spots.filter(s => s.stamped).length;
 let mapInitialized = false;
 
+// --- 初期表示時の処理 ---
+// 画面を開いた直後に、スポット一覧やスタンプカードのマスを描画します。
+window.addEventListener('DOMContentLoaded', () => {
+  renderSpots('spotList');
+  renderSpots('spotListMap');
+  updateUI();
+});
+
 // 4. 画面表示の制御
 function showPage(name, tabEl) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
