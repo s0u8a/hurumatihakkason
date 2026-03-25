@@ -14,9 +14,16 @@ const spots = [
 ];
 
 // 3. localStorageからスタンプ状態を復元
+// 3. localStorageからスタンプ状態を復元
 const saved = JSON.parse(localStorage.getItem('stamps') || '{}');
 spots.forEach(spot => {
-  if (saved[spot.id]) spot.stamped = true;
+  if (saved[spot.id]) {
+    spot.stamped = true;
+    // 古いデータ（単なる true）と新しいデータ（オブジェクト）の両方に対応する
+    if (saved[spot.id].imageUrl) {
+      spot.imageUrl = saved[spot.id].imageUrl;
+    }
+  }
 });
 
 let stampCount = spots.filter(s => s.stamped).length;
@@ -106,9 +113,15 @@ function updateUI() {
   spots.forEach((spot, i) => {
     const cell = document.createElement('div');
     cell.className = 'stamp-cell' + (spot.stamped ? ' earned' : '');
+    
+    // 写真URLがあればその写真を表示し、なければアイコンを表示する
+    const mediaHtml = spot.imageUrl 
+      ? `<div style="height: 60px; margin: 5px 0; border-radius: 8px; overflow: hidden;"><img src="${spot.imageUrl}" style="width: 100%; height: 100%; object-fit: cover;"></div>` 
+      : `<div class="stamp-emoji">${spot.stamped ? spot.icon : '❓'}</div>`;
+
     cell.innerHTML = `
       <div class="stamp-number">${i + 1}</div>
-      <div class="stamp-emoji">${spot.stamped ? spot.icon : '❓'}</div>
+      ${mediaHtml}
       <div class="stamp-name">${spot.stamped ? spot.name : '未取得'}</div>
     `;
     grid.appendChild(cell);
@@ -215,22 +228,28 @@ async function analyzeWithAI(imageUrl) {
       }
     }
 
-    // 2. もし場所が特定できなくても「ラベル」で強引に判定（デモで失敗しないための工夫！）
+    // 2. もし場所が特定できなくても「ラベル」で汎用的に判定（デモで確実に成功させる工夫！）
     if (!targetSpotId) {
       const descriptions = labels.map(l => l.description.toLowerCase());
       console.log("写っているものリスト:", descriptions);
 
-      // NEXT21っぽいもの（高いビル、空、ガラスなど）が写っていたら判定を甘くする
-      const next21Keywords = [
-        "skyscraper", "metropolitan area", "condominium", 
-        "building", "architecture", "tower block", 
-        "commercial building", "city", "mixed-use", "headquarters",
-        "daytime", "sky", "cloud"
-      ];
-      
-      const isNext21 = descriptions.some(desc => next21Keywords.includes(desc));
+      // 各スポットの関連キーワード（甘めの判定）
+      const keywordsMarket = ["market", "marketplace", "food", "grocery", "bazaar", "shopping", "retail", "supermarket"]; // 1: 本町市場
+      const keywordsShrine = ["shrine", "temple", "place of worship", "shinto", "shinto shrine", "torii", "historic site", "religion", "japanese architecture"]; // 2: 白山神社
+      const keywordsStreet = ["street", "alley", "road", "pedestrian", "town", "neighborhood"]; // 3: 古町通り
+      const keywordsNext21 = ["skyscraper", "metropolitan area", "condominium", "building", "tower block", "commercial building", "city", "sky", "cloud", "architecture"]; // 6: NEXT21
 
-      if (isNext21) {
+      // 他のスポットに合致するか順番に判定
+      if (descriptions.some(d => keywordsShrine.includes(d))) {
+        aiMessage = "⛩️ 白山神社ですね！歴史ある風景としてスタンプを押します！";
+        targetSpotId = 2;
+      } else if (descriptions.some(d => keywordsMarket.includes(d))) {
+        aiMessage = "🛒 本町市場ですね！活気があって素敵な一枚です！";
+        targetSpotId = 1;
+      } else if (descriptions.some(d => keywordsStreet.includes(d))) {
+        aiMessage = "🏮 古町通りですね！風情ある街並みですね！";
+        targetSpotId = 3;
+      } else if (descriptions.some(d => keywordsNext21.includes(d))) {
         aiMessage = "🏙️ NEXT21ですね！古町のランドマークとしてスタンプを押します！";
         targetSpotId = 6;
       }
@@ -241,9 +260,15 @@ async function analyzeWithAI(imageUrl) {
       const spot = spots.find(s => s.id === targetSpotId);
       if (spot && !spot.stamped) {
         spot.stamped = true;
-        // 保存用データを作成して保存
+        spot.imageUrl = imageUrl; // アップロードされた写真URLも記録する
+        
+        // 保存用データを作成して保存（画像URL込み）
         const savedData = {};
-        spots.forEach(s => { if (s.stamped) savedData[s.id] = true; });
+        spots.forEach(s => { 
+          if (s.stamped) {
+            savedData[s.id] = { stamped: true, imageUrl: s.imageUrl };
+          } 
+        });
         localStorage.setItem('stamps', JSON.stringify(savedData));
 
         // UI（画面）を更新
