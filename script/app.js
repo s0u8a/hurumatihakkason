@@ -120,8 +120,9 @@ function updateUI() {
 }
 
 // 8. 写真アップロード (Cloudinary)
-const CLOUD_NAME = 'djhjyfe3k';
-const UPLOAD_PRESET = 'my_preset';
+const CLOUD_NAME = CONFIG.CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = CONFIG.CLOUDINARY_PRESET;
+const GOOGLE_API_KEY = CONFIG.GOOGLE_VISION_API_KEY;
 
 async function uploadToCloudinary() {
   const fileInput = document.getElementById('photo-input');
