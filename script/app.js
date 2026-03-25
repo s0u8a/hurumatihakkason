@@ -189,17 +189,23 @@ async function analyzeWithAI(imageUrl) {
     
     let aiMessage = "素敵な写真ですね！古町さんぽを楽しんでください。";
     let targetSpotId = null;
+// --- 判定ロジックの強化版 ---
+if (landmarks.length > 0) {
+  const name = landmarks.description;
+  const lowerName = name.toLowerCase(); // 小文字に統一して比較しやすくする
+  console.log("AIが判定した場所の名前:", name); // ここでコンソールに正解が出ます
 
-    // 修正ポイント②：ランドマーク（有名な場所）からスポットを特定
-    if (landmarks.length > 0) {
-      const name = landmarks.description;
-      if (name.includes("Hakusan") || name.includes("白山神社")) {
-        aiMessage = "⛩️ AIが「白山神社」を認識しました！歴史ある古町の守り神ですね。";
-        targetSpotId = 2; // 白山神社のID
-      } else if (name.includes("NEXT21")) {
-        aiMessage = "🏙️ 「NEXT21」ですね！展望台からの景色は最高です。";
-      }
-    }
+  // NEXT21の判定（色々な表記に対応）
+  if (lowerName.includes("next21") || lowerName.includes("next 21") || name.includes("ネクスト")) {
+    aiMessage = "🏙️ 「NEXT21」ですね！古町のランドマークです。スタンプをゲットしました！";
+    targetSpotId = 3; // spots配列の古町通りや、もしNEXT21を個別で作るならそのID
+  } 
+  // 白山神社の判定
+  else if (lowerName.includes("hakusan") || lowerName.includes("shrine") || name.includes("白山")) {
+    aiMessage = "⛩️ AIが「白山神社」を認識しました！古町の守り神ですね。スタンプをゲット！";
+    targetSpotId = 2; // 白山神社のID
+  }
+}
 
     // 修正ポイント③：特定のワード（ラーメン等）からメッセージを変える
     const descriptions = labels.map(l => l.description.toLowerCase());
