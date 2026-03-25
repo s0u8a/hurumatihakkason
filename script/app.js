@@ -1,8 +1,10 @@
-// 1. ハッカソン用設定（直接書き込み）
+// 1. ハッカソン用設定
 const CLOUD_NAME = 'djhjyfe3k';
 const UPLOAD_PRESET = 'my_preset';
-const GOOGLE_API_KEY = 'AIzaSyDAfzLdri00Mghw-5jO6-ubYp66ZHxVJ1A';
 
+// Everypixelの設定（ここに発行されたものを入れる）
+const EVERYPIXEL_ID = '2MK18fqJGNqw06Z4luCbaqzS';
+const EVERYPIXEL_SECRET = 'C5UnpEO89Xv6TmYa8a4yLYblGyY9gmKLWEZvbOLF7wAltciA';
 // 2. スポットデータ
 const spots = [
   { id: 1, name: "本町市場", icon: "🛒", desc: "新鮮な海産物や野菜が並ぶ老舗市場。日本海の幸を堪能できる。", tags: ["グルメ", "歴史"], stamped: false, lat: 37.9175, lng: 139.0365 },
@@ -155,65 +157,46 @@ async function uploadToCloudinary() {
   }
 }
 
-// 10. AI解析処理
+
+
+// 10. AI解析処理 (Everypixel API版)
 async function analyzeWithAI(imageUrl) {
   const statusMsg = document.getElementById('upload-status');
-  const visionURL = `https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_API_KEY}`;
 
-  const requestData = {
-    requests: [{
-      image: { source: { imageUri: imageUrl } },
-      features: [{ type: 'LABEL_DETECTION', maxResults: 10 }]
-    }]
-  };
+  // URLを作成（画像URLをエンコードして渡す）
+  const everypixelURL = `https://api.everypixel.com/v1/tag?url=${encodeURIComponent(imageUrl)}`;
 
   try {
-    const response = await fetch(visionURL, {
-      method: 'POST',
-      body: JSON.stringify(requestData)
+    const response = await fetch(everypixelURL, {
+      method: 'GET',
+      headers: {
+        // IDとSecretを使って認証（Basic認証）
+        'Authorization': 'Basic ' + btoa(EVERYPIXEL_ID + ':' + EVERYPIXEL_SECRET)
+      }
     });
+
     const data = await response.json();
 
-    if (!response.ok || data.error) {
-      console.error("Vision API Error:", data.error);
-      statusMsg.textContent = "AI解析に失敗しました（403エラー: APIキーが無効か制限されています）。";
-      return;
+    if (data.status === 'ok') {
+      // 解析結果のキーワードを抽出
+      const keywords = data.keywords.map(k => k.keyword.toLowerCase());
+      let aiMessage = "素敵な写真ですね！";
+
+      // 判定処理
+      if (keywords.some(k => k.includes('noodle') || k.includes('ramen'))) {
+        aiMessage = "🍜 おっ、古町の美味しそうなラーメンを認識しました！";
+      } else if (keywords.some(k => k.includes('shrine') || k.includes('temple') || k.includes('torii'))) {
+        aiMessage = "⛩️ 歴史を感じる建物ですね。古町さんぽの思い出にぴったりです！";
+      } else if (keywords.some(k => k.includes('food') || k.includes('dish'))) {
+        aiMessage = "😋 美味しそうなグルメ写真ですね！お味はいかがでしたか？";
+      }
+
+      statusMsg.innerHTML = `<span style="color:var(--red); font-weight:bold;">AIガイド：</span> ${aiMessage}`;
+    } else {
+      statusMsg.textContent = "AI解析に失敗しました。";
     }
-
-    const labels = data.responses && data.responses[0] ? data.responses[0].labelAnnotations : null;
-
-    if (!labels) {
-      statusMsg.textContent = "解析結果が得られませんでした。";
-      return;
-    }
-
-    const descriptions = labels.map(l => l.description.toLowerCase());
-    let aiMessage = "素敵な写真ですね！";
-
-    if (descriptions.some(d => d.includes('noodle') || d.includes('ramen'))) {
-      aiMessage = "🍜 おっ、古町の美味しそうなラーメンを認識しました！";
-    } else if (descriptions.some(d => d.includes('shrine') || d.includes('temple') || d.includes('torii'))) {
-      aiMessage = "⛩️ 歴史を感じる建物ですね。古町さんぽの思い出にぴったりです！";
-    } else if (descriptions.some(d => d.includes('food') || d.includes('dish'))) {
-      aiMessage = "😋 美味しそうなグルメ写真ですね！お味はいかがでしたか？";
-    } else if (descriptions.some(d => d.includes('building') || d.includes('town'))) {
-      aiMessage = "🏙️ 古町の街並みが綺麗に写っていますね。";
-    }
-
-    statusMsg.innerHTML = `<span style="color:var(--red); font-weight:bold;">AIガイド：</span> ${aiMessage}`;
   } catch (error) {
     console.error("AI解析エラー:", error);
     statusMsg.textContent = "解析中にエラーが発生しました。";
   }
 }
-
-function selectRoute(el) {
-  document.querySelectorAll('.route-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-}
-
-window.onload = () => {
-  renderSpots('spotList');
-  renderSpots('spotListMap');
-  updateUI();
-};
