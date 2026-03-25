@@ -111,7 +111,7 @@ function updateUI() {
 // 9. 写真アップロード (Cloudinary) & AI解析
 async function uploadToCloudinary() {
   const fileInput = document.getElementById('photo-input');
-  const file = fileInput.files;
+  const file = fileInput.files; // 末尾に をつけるだけ！
   const statusMsg = document.getElementById('upload-status');
   const previewImg = document.getElementById('photo-preview');
 
