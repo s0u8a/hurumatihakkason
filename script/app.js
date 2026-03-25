@@ -1,9 +1,9 @@
 const spots = [
-  { id:1, name:"本町市場", icon:"🛒", desc:"新鮮な海産物や野菜が並ぶ老舗市場。日本海の幸を堪能できる。", tags:["グルメ","歴史"], stamped: true },
-  { id:2, name:"白山神社", icon:"⛩️", desc:"1000年以上の歴史を持つ古町の守り神。境内の楼門は必見。", tags:["歴史","パワスポ"], stamped: false },
-  { id:3, name:"古町通り", icon:"🏮", desc:"江戸時代から続くメインストリート。七番町・八番町が中心。", tags:["散策","買い物"], stamped: false },
-  { id:4, name:"砂丘館", icon:"🏛️", desc:"旧日本銀行新潟支店長宅。文化財指定の洋館でアートを鑑賞。", tags:["アート","歴史"], stamped: false },
-  { id:5, name:"新潟県政記念館", icon:"🏛️", desc:"明治時代の洋風建築。国重要文化財で古町の歴史を伝える。", tags:["歴史","建築"], stamped: false },
+  { id: 1, name: "本町市場", icon: "🛒", desc: "新鮮な海産物や野菜が並ぶ老舗市場。日本海の幸を堪能できる。", tags: ["グルメ", "歴史"], stamped: true },
+  { id: 2, name: "白山神社", icon: "⛩️", desc: "1000年以上の歴史を持つ古町の守り神。境内の楼門は必見。", tags: ["歴史", "パワスポ"], stamped: false },
+  { id: 3, name: "古町通り", icon: "🏮", desc: "江戸時代から続くメインストリート。七番町・八番町が中心。", tags: ["散策", "買い物"], stamped: false },
+  { id: 4, name: "砂丘館", icon: "🏛️", desc: "旧日本銀行新潟支店長宅。文化財指定の洋館でアートを鑑賞。", tags: ["アート", "歴史"], stamped: false },
+  { id: 5, name: "新潟県政記念館", icon: "🏛️", desc: "明治時代の洋風建築。国重要文化財で古町の歴史を伝える。", tags: ["歴史", "建築"], stamped: false },
 ];
 
 let stampCount = 1;
@@ -83,7 +83,58 @@ function showPage(name, tabEl) {
 function selectRoute(el) {
   document.querySelectorAll('.route-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
+}// --- ここを自分の設定に書き換えてください ---
+const CLOUD_NAME = 'djhjyfe3k';
+const UPLOAD_PRESET = 'my_preset';
+// ------------------------------------------
+
+async function uploadImage() {
+  const fileInput = document.getElementById('file-input');
+  const file = fileInput.files;
+  const loadingMsg = document.getElementById('loading-msg');
+
+  if (!file) {
+    alert("ファイルを選択してください");
+    return;
+  }
+
+  // ローディング表示
+  loadingMsg.style.display = 'block';
+
+  // データを準備（FormData）
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', UPLOAD_PRESET);
+
+  try {
+    // CloudinaryのAPIへリクエスト送信
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.secure_url) {
+      // 成功：URLを表示して画像を表示
+      document.getElementById('url-text').innerHTML =
+        `成功！ URL: <a href="${data.secure_url}" target="_blank">${data.secure_url}</a>`;
+
+      const imgPreview = document.getElementById('preview');
+      imgPreview.src = data.secure_url;
+      imgPreview.style.display = 'block';
+    } else {
+      alert("アップロード失敗: " + data.error.message);
+    }
+  } catch (error) {
+    console.error("エラーが発生しました:", error);
+    alert("通信エラーが発生しました");
+  } finally {
+    loadingMsg.style.display = 'none';
+  }
 }
+
+
 
 // 初期化
 renderSpots('spotList');
