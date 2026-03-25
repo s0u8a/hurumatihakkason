@@ -1,4 +1,9 @@
-// 1. スポットデータ（位置情報を含む方を採用）
+// 1. ハッカソン用設定（直接書き込み）
+const CLOUD_NAME = 'djhjyfe3k';
+const UPLOAD_PRESET = 'my_preset';
+const GOOGLE_API_KEY = 'AIzaSyDAfzLdri00Mghw-5jO6-ubYp66ZHxVJ1A';
+
+// 2. スポットデータ
 const spots = [
   { id: 1, name: "本町市場", icon: "🛒", desc: "新鮮な海産物や野菜が並ぶ老舗市場。日本海の幸を堪能できる。", tags: ["グルメ", "歴史"], stamped: false, lat: 37.9175, lng: 139.0365 },
   { id: 2, name: "白山神社", icon: "⛩️", desc: "1000年以上の歴史を持つ古町の守り神。境内の楼門は必見。", tags: ["歴史", "パワスポ"], stamped: false, lat: 37.9156, lng: 139.0412 },
@@ -7,7 +12,7 @@ const spots = [
   { id: 5, name: "新潟県政記念館", icon: "🏛️", desc: "明治時代の洋風建築。国重要文化財で古町の歴史を伝える。", tags: ["歴史", "建築"], stamped: false, lat: 37.9190, lng: 139.0360 }
 ];
 
-// 2. localStorageからスタンプ状態を復元
+// 3. localStorageからスタンプ状態を復元
 const saved = JSON.parse(localStorage.getItem('stamps') || '{}');
 spots.forEach(spot => {
   if (saved[spot.id]) spot.stamped = true;
@@ -16,21 +21,20 @@ spots.forEach(spot => {
 let stampCount = spots.filter(s => s.stamped).length;
 let mapInitialized = false;
 
-// 3. 画面表示の制御
+// 4. 画面表示の制御
 function showPage(name, tabEl) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   if (tabEl) tabEl.classList.add('active');
 
-  // マップタブに切り替えた時に地図を初期化
   if (name === 'map' && !mapInitialized) {
     mapInitialized = true;
-    setTimeout(initMap, 100); // 表示されてから初期化
+    setTimeout(initMap, 100);
   }
 }
 
-// 4. 地図の初期化 (Leaflet)
+// 5. 地図の初期化 (Leaflet)
 function initMap() {
   const map = L.map('map').setView([37.9175, 139.0375], 15);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -43,7 +47,7 @@ function initMap() {
   });
 }
 
-// 5. スポット一覧の描画
+// 6. スポット一覧の描画
 function renderSpots(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -66,35 +70,29 @@ function renderSpots(containerId) {
   });
 }
 
-// 6. スタンプ取得処理
+// 7. スタンプ取得処理
 function getStamp(spot, el) {
   if (!spot.stamped) {
     spot.stamped = true;
     el.classList.add('stamped');
     stampCount++;
-
-    // 保存
     const data = {};
     spots.forEach(s => { if (s.stamped) data[s.id] = true; });
     localStorage.setItem('stamps', JSON.stringify(data));
-
     updateUI();
   }
 }
 
-// 7. UI（数字やグリッド）の更新
+// 8. UIの更新
 function updateUI() {
-  // ヘッダー・プログレス
   document.getElementById('stampCountHeader').textContent = stampCount;
   document.getElementById('progressText').textContent = `${stampCount}/9`;
   document.getElementById('progressBar').style.width = (stampCount / 9 * 100) + '%';
 
-  // スタンプカードのグリッド描画
   const grid = document.getElementById('stampGrid');
   if (!grid) return;
   grid.innerHTML = '';
 
-  // スポットがある分だけ描画
   spots.forEach((spot, i) => {
     const cell = document.createElement('div');
     cell.className = 'stamp-cell' + (spot.stamped ? ' earned' : '');
@@ -106,7 +104,6 @@ function updateUI() {
     grid.appendChild(cell);
   });
 
-  // 空枠（残り9枠まで）
   for (let i = spots.length; i < 9; i++) {
     const cell = document.createElement('div');
     cell.className = 'stamp-cell';
@@ -119,21 +116,10 @@ function updateUI() {
   }
 }
 
-// 8. 写真アップロード (Cloudinary)
-<<<<<<< HEAD
-const CLOUD_NAME = 'djhjyfe3k';
-const UPLOAD_PRESET = 'my_preset';
-const GOOGLE_API_KEY = 'AIzaSyDAfzLdri00Mghw-5jO6-ubYp66ZHxVJ1A'; // ★ここにコピーしたキーを貼り付け
-=======
-const CLOUD_NAME = CONFIG.CLOUDINARY_CLOUD_NAME;
-const UPLOAD_PRESET = CONFIG.CLOUDINARY_PRESET;
-const GOOGLE_API_KEY = CONFIG.GOOGLE_VISION_API_KEY;
->>>>>>> 1ea935c1ead9d59fa7eed452867da6f3832a734e
-
-// 8. 写真アップロード (Cloudinary) & AI解析 (Google Vision)
+// 9. 写真アップロード (Cloudinary) & AI解析
 async function uploadToCloudinary() {
   const fileInput = document.getElementById('photo-input');
-  const file = fileInput.files;
+  const file = fileInput.files; // 修正: filesに変更
   const statusMsg = document.getElementById('upload-status');
   const previewImg = document.getElementById('photo-preview');
 
@@ -148,7 +134,6 @@ async function uploadToCloudinary() {
   formData.append('upload_preset', UPLOAD_PRESET);
 
   try {
-    // --- 1. Cloudinaryへアップロード ---
     const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
       method: 'POST',
       body: formData
@@ -159,12 +144,8 @@ async function uploadToCloudinary() {
       const imageUrl = data.secure_url;
       previewImg.src = imageUrl;
       previewImg.style.display = 'block';
-
       statusMsg.textContent = "AIが写真を解析しています...";
-
-      // --- 2. Google Vision APIで解析 ---
       await analyzeWithAI(imageUrl);
-
     } else {
       statusMsg.textContent = "保存失敗: " + (data.error ? data.error.message : "原因不明");
     }
@@ -174,7 +155,7 @@ async function uploadToCloudinary() {
   }
 }
 
-// 9. Google Vision API 解析処理
+// 10. AI解析処理
 async function analyzeWithAI(imageUrl) {
   const statusMsg = document.getElementById('upload-status');
   const visionURL = `https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_API_KEY}`;
@@ -192,14 +173,13 @@ async function analyzeWithAI(imageUrl) {
       body: JSON.stringify(requestData)
     });
     const data = await response.json();
-    const labels = data.responses.labelAnnotations;
+    const labels = data.responses.labelAnnotations; // 修正:を追加
 
     if (!labels) {
       statusMsg.textContent = "解析結果が得られませんでした。";
       return;
     }
 
-    // AIの解析結果からメッセージを作る
     const descriptions = labels.map(l => l.description.toLowerCase());
     let aiMessage = "素敵な写真ですね！";
 
@@ -214,20 +194,17 @@ async function analyzeWithAI(imageUrl) {
     }
 
     statusMsg.innerHTML = `<span style="color:var(--red); font-weight:bold;">AIガイド：</span> ${aiMessage}`;
-
   } catch (error) {
     console.error("AI解析エラー:", error);
     statusMsg.textContent = "解析中にエラーが発生しました。";
   }
 }
 
-// ルート選択（見た目だけ）
 function selectRoute(el) {
   document.querySelectorAll('.route-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
 }
 
-// 9. 初期実行
 window.onload = () => {
   renderSpots('spotList');
   renderSpots('spotListMap');
