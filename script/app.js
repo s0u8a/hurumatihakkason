@@ -155,15 +155,19 @@ async function uploadToCloudinary() {
   }
 }
 
-// 10. AI解析処理
+// 10. AI解析処理（修正版：ランドマーク検出とスタンプ自動付与を追加）
 async function analyzeWithAI(imageUrl) {
   const statusMsg = document.getElementById('upload-status');
   const visionURL = `https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_API_KEY}`;
 
+  // 修正ポイント①：LABELだけでなくLANDMARK_DETECTIONを追加
   const requestData = {
     requests: [{
       image: { source: { imageUri: imageUrl } },
-      features: [{ type: 'LABEL_DETECTION', maxResults: 10 }]
+      features: [
+        { type: 'LABEL_DETECTION', maxResults: 10 },
+        { type: 'LANDMARK_DETECTION', maxResults: 5 }
+      ]
     }]
   };
 
@@ -175,29 +179,54 @@ async function analyzeWithAI(imageUrl) {
     const data = await response.json();
 
     if (!response.ok || data.error) {
-      console.error("Vision API Error:", data.error);
-      statusMsg.textContent = "AI解析に失敗しました（403エラー: APIキーが無効か制限されています）。";
+      statusMsg.textContent = "AI解析に失敗しました。";
       return;
     }
 
-    const labels = data.responses && data.responses[0] ? data.responses[0].labelAnnotations : null;
+    const res = data.responses;
+    const labels = res.labelAnnotations || [];
+    const landmarks = res.landmarkAnnotations || [];
+    
+    let aiMessage = "素敵な写真ですね！古町さんぽを楽しんでください。";
+    let targetSpotId = null;
 
-    if (!labels) {
-      statusMsg.textContent = "解析結果が得られませんでした。";
-      return;
+    // 修正ポイント②：ランドマーク（有名な場所）からスポットを特定
+    if (landmarks.length > 0) {
+      const name = landmarks.description;
+      if (name.includes("Hakusan") || name.includes("白山神社")) {
+        aiMessage = "⛩️ AIが「白山神社」を認識しました！歴史ある古町の守り神ですね。";
+        targetSpotId = 2; // 白山神社のID
+      } else if (name.includes("NEXT21")) {
+        aiMessage = "🏙️ 「NEXT21」ですね！展望台からの景色は最高です。";
+      }
     }
 
+    // 修正ポイント③：特定のワード（ラーメン等）からメッセージを変える
     const descriptions = labels.map(l => l.description.toLowerCase());
-    let aiMessage = "素敵な写真ですね！";
+    if (!targetSpotId) {
+      if (descriptions.some(d => d.includes('noodle') || d.includes('ramen'))) {
+        aiMessage = "🍜 美味しそうなラーメン！古町周辺は背脂ラーメンなども有名ですよ。";
+      } else if (descriptions.some(d => d.includes('shrine') || d.includes('torii'))) {
+        aiMessage = "⛩️ 神社やお寺のようですね。落ち着く風景です。";
+      }
+    }
 
-    if (descriptions.some(d => d.includes('noodle') || d.includes('ramen'))) {
-      aiMessage = "🍜 おっ、古町の美味しそうなラーメンを認識しました！";
-    } else if (descriptions.some(d => d.includes('shrine') || d.includes('temple') || d.includes('torii'))) {
-      aiMessage = "⛩️ 歴史を感じる建物ですね。古町さんぽの思い出にぴったりです！";
-    } else if (descriptions.some(d => d.includes('food') || d.includes('dish'))) {
-      aiMessage = "😋 美味しそうなグルメ写真ですね！お味はいかがでしたか？";
-    } else if (descriptions.some(d => d.includes('building') || d.includes('town'))) {
-      aiMessage = "🏙️ 古町の街並みが綺麗に写っていますね。";
+    // 修正ポイント④：スポットが特定できたらスタンプを自動で押す
+    if (targetSpotId) {
+      const spot = spots.find(s => s.id === targetSpotId);
+      if (spot && !spot.stamped) {
+        spot.stamped = true;
+        // 保存用データを作成
+        const data = {};
+        spots.forEach(s => { if (s.stamped) data[s.id] = true; });
+        localStorage.setItem('stamps', JSON.stringify(data));
+        
+        // UI（画面）を更新
+        stampCount = spots.filter(s => s.stamped).length;
+        renderSpots('spotList');
+        updateUI();
+        aiMessage += " ✨スタンプを1個ゲットしました！";
+      }
     }
 
     statusMsg.innerHTML = `<span style="color:var(--red); font-weight:bold;">AIガイド：</span> ${aiMessage}`;
@@ -206,14 +235,3 @@ async function analyzeWithAI(imageUrl) {
     statusMsg.textContent = "解析中にエラーが発生しました。";
   }
 }
-
-function selectRoute(el) {
-  document.querySelectorAll('.route-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-}
-
-window.onload = () => {
-  renderSpots('spotList');
-  renderSpots('spotListMap');
-  updateUI();
-};
