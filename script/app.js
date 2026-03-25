@@ -173,7 +173,14 @@ async function analyzeWithAI(imageUrl) {
       body: JSON.stringify(requestData)
     });
     const data = await response.json();
-    const labels = data.responses.labelAnnotations; // 修正:を追加
+
+    if (!response.ok || data.error) {
+      console.error("Vision API Error:", data.error);
+      statusMsg.textContent = "AI解析に失敗しました（403エラー: APIキーが無効か制限されています）。";
+      return;
+    }
+
+    const labels = data.responses && data.responses[0] ? data.responses[0].labelAnnotations : null;
 
     if (!labels) {
       statusMsg.textContent = "解析結果が得られませんでした。";
