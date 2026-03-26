@@ -31,10 +31,9 @@ const savedCoupons = JSON.parse(localStorage.getItem('used_coupons') || '{}');
 spots.forEach(spot => {
   if (saved[spot.id]) {
     spot.stamped = true;
-    // 古いデータ（単なる true）と新しいデータ（オブジェクト）の両方に対応する
-    if (saved[spot.id].imageUrl) {
-      spot.imageUrl = saved[spot.id].imageUrl;
-    }
+    // 古いデータと新しいデータの両方に対応
+    if (saved[spot.id].imageUrl) spot.imageUrl = saved[spot.id].imageUrl;
+    if (saved[spot.id].imageHash) spot.imageHash = saved[spot.id].imageHash;
   }
 });
 
@@ -178,6 +177,16 @@ function updateUI() {
 }
 
 // 9. 写真アップロード (Cloudinary) & AI解析
+let currentUploadHash = null;
+
+// 画像のハッシュ化（完全同一ファイルの検知用）
+async function calculateHash(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 async function uploadToCloudinary() {
   const fileInput = document.getElementById('photo-input');
   const file = fileInput.files[0]; // 修正: 最初のファイルオブジェクトを取得する
@@ -187,6 +196,21 @@ async function uploadToCloudinary() {
   if (!file) {
     alert("写真を選択してください");
     return;
+  }
+
+  // 使い回し画像のチェック
+  statusMsg.textContent = "写真の重複をチェック中...";
+  try {
+    currentUploadHash = await calculateHash(file);
+    const usedHashes = JSON.parse(localStorage.getItem('used_hashes') || '[]');
+    if (usedHashes.includes(currentUploadHash)) {
+      statusMsg.textContent = "";
+      alert("❌ この写真はすでに過去のスタンプラリーで使われ、クーポンと引き換え済みです！新しい写真を撮影してください。");
+      fileInput.value = '';
+      return;
+    }
+  } catch (e) {
+    console.error("ハッシュ計算エラー:", e);
   }
 
   statusMsg.textContent = "写真を保存中...";
@@ -337,12 +361,13 @@ async function analyzeWithAI(imageUrl) {
       if (spot && !spot.stamped) {
         spot.stamped = true;
         spot.imageUrl = imageUrl; // アップロードされた写真URLも記録する
+        spot.imageHash = currentUploadHash; // ハッシュ値も記録する
         
-        // 保存用データを作成して保存（画像URL込み）
+        // 保存用データを作成して保存（画像URLとハッシュ込み）
         const savedData = {};
         spots.forEach(s => { 
           if (s.stamped) {
-            savedData[s.id] = { stamped: true, imageUrl: s.imageUrl };
+            savedData[s.id] = { stamped: true, imageUrl: s.imageUrl, imageHash: s.imageHash };
           } 
         });
         localStorage.setItem('stamps', JSON.stringify(savedData));
@@ -411,10 +436,35 @@ function renderCoupons() {
 }
 
 function useCoupon(id) {
-  if (confirm("このクーポンを使用しますか？\\n※お店のスタッフに見せながら「OK」を押してください。")) {
+  if (confirm("このクーポンを使用しますか？\\n※使用すると現在のスタンプは「リセット」され、今回使った写真は次回以降使えなくなります！\\n\\n※お店のスタッフに見せながら「OK」を押してください。")) {
+    
+    // クーポン使用済みにする
     savedCoupons[id] = true;
     localStorage.setItem('used_coupons', JSON.stringify(savedCoupons));
-    renderCoupons();
-    alert("クーポンを使用しました！");
+
+    // 現在のスタンプの写真を「使用済み」として記録する
+    const usedHashes = JSON.parse(localStorage.getItem('used_hashes') || '[]');
+    spots.forEach(s => {
+      if (s.stamped && s.imageHash && !usedHashes.includes(s.imageHash)) {
+        usedHashes.push(s.imageHash);
+      }
+    });
+    localStorage.setItem('used_hashes', JSON.stringify(usedHashes));
+
+    // スタンプを完全リセットする
+    spots.forEach(s => {
+      s.stamped = false;
+      s.imageUrl = null;
+      s.imageHash = null;
+    });
+    localStorage.removeItem('stamps');
+    stampCount = 0;
+
+    // 画面を更新する
+    renderSpots('spotList');
+    renderSpots('spotListMap');
+    updateUI();
+    
+    alert("クーポンを使用しました！スタンプカードが新しくなりました。\\nまた新しい写真を撮ってスタンプを集められます！");
   }
 }
