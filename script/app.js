@@ -181,10 +181,18 @@ let currentUploadHash = null;
 
 // 画像のハッシュ化（完全同一ファイルの検知用）
 async function calculateHash(file) {
-  const arrayBuffer = await file.arrayBuffer();
-  const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  if (window.crypto && window.crypto.subtle) {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch(e) {
+      console.warn('Crypto API error, falling back to basic hash.');
+    }
+  }
+  // ローカル開発(file://)など暗号化APIが使えない環境では、ファイル情報を疑似ハッシュとして使う
+  return `${file.name}_${file.size}_${file.lastModified}`;
 }
 
 async function uploadToCloudinary() {
