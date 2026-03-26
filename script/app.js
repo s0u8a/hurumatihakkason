@@ -16,12 +16,14 @@ const spots = [
   { id: 9, name: "萬代橋", icon: "🌉", desc: "新潟市のシンボル。信濃川にかかる重要文化財の石造りアーチ橋。", tags: ["歴史", "ランドマーク", "映え", "散策"], stamped: false, lat: 37.9197, lng: 139.0531 }
 ];
 
-// クーポンデータ
 const coupons = [
   { id: 1, reqStamps: 1, shop: "🍶 越乃寒梅 本店", title: "試飲1杯無料サービス" },
   { id: 2, reqStamps: 2, shop: "☕ 古町珈琲", title: "コーヒー1杯100円引き" },
   { id: 3, reqStamps: 3, shop: "🍜 いたりあん 古町店", title: "ランチ10%OFFクーポン" },
+  { id: 6, reqStamps: 4, shop: "💆 古町リラクゼーション", title: "マッサージ無料クーポン" },
+  { id: 7, reqStamps: 5, shop: "🍜 古町のラーメン屋", title: "餃子無料券" },
   { id: 4, reqStamps: 6, shop: "🏨 古町旅館", title: "日帰り温泉500円引き" },
+  { id: 8, reqStamps: 7, shop: "💳 JCB", title: "JCBカードgiftクーポン" },
   { id: 5, reqStamps: 9, shop: "🎉 古町グルメ", title: "豪華コンプリート招待券" }
 ];
 
@@ -468,11 +470,22 @@ function useCoupon(id) {
     localStorage.removeItem('stamps');
     stampCount = 0;
 
+    // 全てのクーポンが使用済みかチェック
+    const allCouponsUsed = coupons.every(c => savedCoupons[c.id]);
+    if (allCouponsUsed) {
+      // クーポン使用履歴をリセット
+      for (let key in savedCoupons) {
+        delete savedCoupons[key];
+      }
+      localStorage.removeItem('used_coupons');
+      alert("クーポンを使用しました！\\nなんと、全てのクーポンをコンプリートしました！\\nクーポンの取得状況がリセットされ、再び最初から全て取得できるようになりました🎉");
+    } else {
+      alert("クーポンを使用しました！スタンプカードが新しくなりました。\\nまた新しい写真を撮ってスタンプを集められます！");
+    }
+
     // 画面を更新する
     renderSpots('spotList');
     renderSpots('spotListMap');
     updateUI();
-    
-    alert("クーポンを使用しました！スタンプカードが新しくなりました。\\nまた新しい写真を撮ってスタンプを集められます！");
   }
 }
