@@ -237,7 +237,7 @@ async function analyzeWithAI(imageUrl) {
       } else if (name.includes("memorial") || name.includes("prefectural")) {
         aiMessage = "🏛️ 新潟県政記念館ですね！明治の息吹を感じます。";
         targetSpotId = 5;
-      } else if (name.includes("saito") || name.includes("villa")) {
+      } else if (name.includes("saito") || name.includes("saitou")) {
         aiMessage = "🏡 旧齋藤家別邸ですね！美しいお庭ですね。";
         targetSpotId = 7;
       } else if (name.includes("minatopia") || name.includes("museum")) {
@@ -258,10 +258,10 @@ async function analyzeWithAI(imageUrl) {
       const keywordsShrine = ["shrine", "temple", "place of worship", "shinto", "shinto shrine", "torii", "religion"]; // 2: 白山神社
       const keywordsMarket = ["market", "marketplace", "food", "grocery", "bazaar", "supermarket", "stall", "fish", "vegetable", "produce"]; // 1: 本町市場
       const keywordsStreet = ["street", "alley", "road", "pedestrian", "town", "neighborhood", "arcade", "shopping mall", "retail", "shopping", "promenade", "corridor", "city", "building", "architecture", "structure", "plaza"]; // 3: 古町通り
-      const keywordsSakyukan = ["house", "villa", "mansion", "residence", "home", "art gallery", "estate", "property", "cottage", "japanese architecture", "historic site", "roof"]; // 4: 砂丘館
+      const keywordsSakyukan = ["house", "mansion", "residence", "home", "art gallery", "estate", "property", "cottage", "roof"]; // 4: 砂丘館
       const keywordsPrefectural = ["government", "assembly", "parliament", "western architecture", "classic architecture", "courthouse", "palace"]; // 5: 新潟県政記念館
       const keywordsNext21 = ["skyscraper", "condominium", "tower block", "high-rise", "tower", "observatory", "tall building"]; // 6: NEXT21
-      const keywordsSaito = ["garden", "japanese garden", "courtyard", "tea house", "botanical"]; // 7: 旧齋藤家別邸
+      const keywordsSaito = ["garden", "japanese garden", "courtyard", "tea house", "botanical", "villa", "japanese architecture", "historic site", "tatami", "shoji"]; // 7: 旧齋藤家別邸
       const keywordsMinatopia = ["museum", "brick", "exhibition", "history", "customs"]; // 8: みなとぴあ
       const keywordsBridge = ["bridge", "arch bridge", "river", "water", "infrastructure", "skyline"]; // 9: 萬代橋
 
@@ -269,15 +269,15 @@ async function analyzeWithAI(imageUrl) {
       if (descriptions.some(d => keywordsShrine.includes(d))) {
         aiMessage = "⛩️ 白山神社ですね！歴史ある風景としてスタンプを押します！";
         targetSpotId = 2;
+      } else if (descriptions.some(d => keywordsSaito.includes(d))) {
+        aiMessage = "🏡 旧齋藤家別邸ですね！由緒ある素敵な景色です！";
+        targetSpotId = 7;
       } else if (descriptions.some(d => keywordsSakyukan.includes(d))) {
         aiMessage = "🏛️ 砂丘館ですね！落ち着いたモダンな空間ですね！";
         targetSpotId = 4;
       } else if (descriptions.some(d => keywordsPrefectural.includes(d))) {
         aiMessage = "🏛️ 新潟県政記念館ですね！明治の息吹を感じます！";
         targetSpotId = 5;
-      } else if (descriptions.some(d => keywordsSaito.includes(d))) {
-        aiMessage = "🏡 旧齋藤家別邸ですね！立派なお庭の景色です！";
-        targetSpotId = 7;
       } else if (descriptions.some(d => keywordsMinatopia.includes(d))) {
         aiMessage = "🏛️ みなとぴあですね！歴史を感じさせる建物です！";
         targetSpotId = 8;
