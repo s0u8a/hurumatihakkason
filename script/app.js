@@ -222,7 +222,10 @@ async function analyzeWithAI(imageUrl) {
       const name = landmarks[0].description.toLowerCase(); // 修正: landmarksも配列なので最初の要素の名前を見る
       console.log("AIが見つけた場所:", name); // 開発者ツールで何て出てるか確認できます
 
-      if (name.includes("next") || name.includes("next21")) {
+      if (name.includes("furumachi") || name.includes("mall") || name.includes("arcade") || name.includes("street")) {
+        aiMessage = "🏮 古町通りですね！アーケードが続くメインストリートです。";
+        targetSpotId = 3;
+      } else if (name.includes("next") || name.includes("next21")) {
         aiMessage = "🏙️ NEXT21ですね！古町のランドマークとしてスタンプを押します！";
         targetSpotId = 6;
       } else if (name.includes("hakusan") || name.includes("shrine")) {
@@ -254,7 +257,7 @@ async function analyzeWithAI(imageUrl) {
       // 各スポットの関連キーワード（甘めの判定ですが、他と被りやすい汎用単語は避ける）
       const keywordsShrine = ["shrine", "temple", "place of worship", "shinto", "shinto shrine", "torii", "religion"]; // 2: 白山神社
       const keywordsMarket = ["market", "marketplace", "food", "grocery", "bazaar", "supermarket", "stall", "fish", "vegetable", "produce"]; // 1: 本町市場
-      const keywordsStreet = ["street", "alley", "road", "pedestrian", "town", "neighborhood", "arcade", "shopping mall", "retail", "shopping", "promenade", "corridor"]; // 3: 古町通り
+      const keywordsStreet = ["street", "alley", "road", "pedestrian", "town", "neighborhood", "arcade", "shopping mall", "retail", "shopping", "promenade", "corridor", "city", "building", "architecture", "structure", "plaza"]; // 3: 古町通り
       const keywordsSakyukan = ["house", "villa", "mansion", "residence", "home", "art gallery", "estate", "property", "cottage", "japanese architecture", "historic site", "roof"]; // 4: 砂丘館
       const keywordsPrefectural = ["government", "assembly", "parliament", "western architecture", "classic architecture", "courthouse", "palace"]; // 5: 新潟県政記念館
       const keywordsNext21 = ["skyscraper", "condominium", "tower block", "high-rise", "tower", "observatory", "tall building"]; // 6: NEXT21
