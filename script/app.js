@@ -16,9 +16,18 @@ const spots = [
   { id: 9, name: "萬代橋", icon: "🌉", desc: "新潟市のシンボル。信濃川にかかる重要文化財の石造りアーチ橋。", tags: ["歴史", "ランドマーク", "映え", "散策"], stamped: false, lat: 37.9197, lng: 139.0531 }
 ];
 
-// 3. localStorageからスタンプ状態を復元
+// クーポンデータ
+const coupons = [
+  { id: 1, reqStamps: 1, shop: "🍶 越乃寒梅 本店", title: "試飲1杯無料サービス" },
+  { id: 2, reqStamps: 2, shop: "☕ 古町珈琲", title: "コーヒー1杯100円引き" },
+  { id: 3, reqStamps: 3, shop: "🍜 いたりあん 古町店", title: "ランチ10%OFFクーポン" },
+  { id: 4, reqStamps: 6, shop: "🏨 古町旅館", title: "日帰り温泉500円引き" },
+  { id: 5, reqStamps: 9, shop: "🎉 古町グルメ", title: "豪華コンプリート招待券" }
+];
+
 // 3. localStorageからスタンプ状態を復元
 const saved = JSON.parse(localStorage.getItem('stamps') || '{}');
+const savedCoupons = JSON.parse(localStorage.getItem('used_coupons') || '{}');
 spots.forEach(spot => {
   if (saved[spot.id]) {
     spot.stamped = true;
@@ -160,6 +169,9 @@ function updateUI() {
     `;
     grid.appendChild(cell);
   }
+  
+  // クーポンも再描画
+  renderCoupons();
 }
 
 // 9. 写真アップロード (Cloudinary) & AI解析
@@ -347,5 +359,59 @@ async function analyzeWithAI(imageUrl) {
   } catch (error) {
     console.error("AI解析エラー:", error);
     statusMsg.textContent = "解析中にエラーが発生しました。";
+  }
+}
+
+// 11. クーポンの描画と使用
+function renderCoupons() {
+  const list = document.querySelector('.coupon-list');
+  if (!list) return;
+  list.innerHTML = '';
+  
+  coupons.forEach(coupon => {
+    const isAvailable = stampCount >= coupon.reqStamps;
+    const remaining = coupon.reqStamps - stampCount;
+    const isUsed = savedCoupons[coupon.id];
+    
+    let statusHtml = '';
+    let bgColor = '';
+    let opacity = '1';
+    
+    if (isUsed) {
+      statusHtml = '<span class="coupon-status" style="background:#e0e0e0; color:#888;">使用済み</span>';
+      bgColor = 'background:var(--warm-gray)';
+      opacity = '0.6';
+    } else if (isAvailable) {
+      statusHtml = `<span class="coupon-status available" onclick="useCoupon(${coupon.id})" style="cursor:pointer; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.1);">✓ 利用する (タップ)</span>`;
+      bgColor = 'background:var(--red)';
+    } else {
+      statusHtml = `<span class="coupon-status locked">🔒 あと${remaining}スタンプ</span>`;
+      bgColor = 'background:var(--warm-gray)';
+    }
+
+    const card = document.createElement('div');
+    card.className = 'coupon-card';
+    card.style.opacity = opacity;
+    card.innerHTML = `
+      <div class="coupon-left" style="${bgColor}">
+        <div class="coupon-stamp-req">${coupon.reqStamps}</div>
+        <div class="coupon-stamp-label">スタンプ</div>
+      </div>
+      <div class="coupon-right">
+        <div class="coupon-shop">${coupon.shop}</div>
+        <div class="coupon-title">${coupon.title}</div>
+        ${statusHtml}
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function useCoupon(id) {
+  if (confirm("このクーポンを使用しますか？\\n※お店のスタッフに見せながら「OK」を押してください。")) {
+    savedCoupons[id] = true;
+    localStorage.setItem('used_coupons', JSON.stringify(savedCoupons));
+    renderCoupons();
+    alert("クーポンを使用しました！");
   }
 }
