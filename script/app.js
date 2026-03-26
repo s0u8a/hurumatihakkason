@@ -251,45 +251,45 @@ async function analyzeWithAI(imageUrl) {
       const descriptions = labels.map(l => l.description.toLowerCase());
       console.log("写っているものリスト:", descriptions);
 
-      // 各スポットの関連キーワード（甘めの判定）
+      // 各スポットの関連キーワード（甘めの判定ですが、他と被りやすい汎用単語は避ける）
+      const keywordsShrine = ["shrine", "temple", "place of worship", "shinto", "shinto shrine", "torii", "religion"]; // 2: 白山神社
       const keywordsMarket = ["market", "marketplace", "food", "grocery", "bazaar", "shopping", "retail", "supermarket"]; // 1: 本町市場
-      const keywordsShrine = ["shrine", "temple", "place of worship", "shinto", "shinto shrine", "torii", "historic site", "religion", "japanese architecture"]; // 2: 白山神社
       const keywordsStreet = ["street", "alley", "road", "pedestrian", "town", "neighborhood"]; // 3: 古町通り
-      const keywordsSakyukan = ["house", "villa", "mansion", "residence", "home", "art gallery"]; // 4: 砂丘館
-      const keywordsPrefectural = ["government", "historic building", "assembly", "parliament", "western architecture", "classic architecture"]; // 5: 新潟県政記念館
-      const keywordsNext21 = ["skyscraper", "metropolitan area", "condominium", "building", "tower block", "commercial building", "city", "sky", "cloud", "architecture"]; // 6: NEXT21
-      const keywordsSaito = ["garden", "japanese garden", "courtyard", "flora", "traditional", "tea house", "botanical"]; // 7: 旧齋藤家別邸
-      const keywordsMinatopia = ["museum", "brick", "historic site", "exhibition", "history"]; // 8: みなとぴあ
+      const keywordsSakyukan = ["house", "villa", "mansion", "residence", "home", "art gallery", "estate", "property", "cottage", "japanese architecture", "historic site", "roof"]; // 4: 砂丘館
+      const keywordsPrefectural = ["government", "assembly", "parliament", "western architecture", "classic architecture", "courthouse", "palace"]; // 5: 新潟県政記念館
+      const keywordsNext21 = ["skyscraper", "metropolitan area", "condominium", "tower block", "commercial building", "city", "sky", "high-rise", "tower"]; // 6: NEXT21
+      const keywordsSaito = ["garden", "japanese garden", "courtyard", "tea house", "botanical"]; // 7: 旧齋藤家別邸
+      const keywordsMinatopia = ["museum", "brick", "exhibition", "history", "customs"]; // 8: みなとぴあ
       const keywordsBridge = ["bridge", "arch bridge", "river", "water", "infrastructure", "skyline"]; // 9: 萬代橋
 
-      // 他のスポットに合致するか順番に判定
+      // 特定の建物や特徴的な場所を先に判定し、汎用的なもの（通りや空など）を後にする
       if (descriptions.some(d => keywordsShrine.includes(d))) {
         aiMessage = "⛩️ 白山神社ですね！歴史ある風景としてスタンプを押します！";
         targetSpotId = 2;
-      } else if (descriptions.some(d => keywordsMarket.includes(d))) {
-        aiMessage = "🛒 本町市場ですね！活気があって素敵な一枚です！";
-        targetSpotId = 1;
-      } else if (descriptions.some(d => keywordsStreet.includes(d))) {
-        aiMessage = "🏮 古町通りですね！風情ある街並みですね！";
-        targetSpotId = 3;
-      } else if (descriptions.some(d => keywordsNext21.includes(d))) {
-        aiMessage = "🏙️ NEXT21ですね！古町のランドマークとしてスタンプを押します！";
-        targetSpotId = 6;
-      } else if (descriptions.some(d => keywordsBridge.includes(d))) {
-        aiMessage = "🌉 萬代橋ですね！美しいアーチ橋の姿が素敵です！";
-        targetSpotId = 9;
+      } else if (descriptions.some(d => keywordsSakyukan.includes(d))) {
+        aiMessage = "🏛️ 砂丘館ですね！落ち着いたモダンな空間ですね！";
+        targetSpotId = 4;
+      } else if (descriptions.some(d => keywordsPrefectural.includes(d))) {
+        aiMessage = "🏛️ 新潟県政記念館ですね！明治の息吹を感じます！";
+        targetSpotId = 5;
       } else if (descriptions.some(d => keywordsSaito.includes(d))) {
         aiMessage = "🏡 旧齋藤家別邸ですね！立派なお庭の景色です！";
         targetSpotId = 7;
       } else if (descriptions.some(d => keywordsMinatopia.includes(d))) {
         aiMessage = "🏛️ みなとぴあですね！歴史を感じさせる建物です！";
         targetSpotId = 8;
-      } else if (descriptions.some(d => keywordsPrefectural.includes(d))) {
-        aiMessage = "🏛️ 新潟県政記念館ですね！明治の息吹を感じます！";
-        targetSpotId = 5;
-      } else if (descriptions.some(d => keywordsSakyukan.includes(d))) {
-        aiMessage = "🏛️ 砂丘館ですね！落ち着いたモダンな空間ですね！";
-        targetSpotId = 4;
+      } else if (descriptions.some(d => keywordsBridge.includes(d))) {
+        aiMessage = "🌉 萬代橋ですね！美しいアーチ橋の姿が素敵です！";
+        targetSpotId = 9;
+      } else if (descriptions.some(d => keywordsNext21.includes(d))) {
+        aiMessage = "🏙️ NEXT21ですね！古町のランドマークとしてスタンプを押します！";
+        targetSpotId = 6;
+      } else if (descriptions.some(d => keywordsMarket.includes(d))) {
+        aiMessage = "🛒 本町市場ですね！活気があって素敵な一枚です！";
+        targetSpotId = 1;
+      } else if (descriptions.some(d => keywordsStreet.includes(d))) {
+        aiMessage = "🏮 古町通りですね！風情ある街並みですね！";
+        targetSpotId = 3;
       }
     }
 
