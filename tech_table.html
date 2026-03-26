@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>使用技術一覧（スライド用）</title>
+<style>
+  body {
+    font-family: 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif;
+    background: #f4f6f9;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+  }
+  table {
+    border-collapse: collapse;
+    width: 1000px;
+    background: white;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  th {
+    background: #FF5A5F; /* 古町さんぽの赤色に合わせる */
+    color: white;
+    padding: 18px;
+    font-size: 20px;
+    text-align: left;
+    font-weight: bold;
+  }
+  td {
+    border-bottom: 1px solid #eee;
+    padding: 24px;
+    font-size: 16px;
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background-color: #fdfdfd; }
+  
+  .tech-name { font-size: 22px; font-weight: bold; color: #333; }
+  .tech-role {
+    display: inline-block;
+    background: #f0f0f0;
+    color: #666;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    margin-top: 6px;
+  }
+  .desc { line-height: 1.7; color: #444; }
+  
+  img {
+    max-height: 60px;
+    max-width: 150px;
+    object-fit: contain;
+  }
+  .logos {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+  .logo-wrapper {
+    width: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+</style>
+</head>
+<body>
+
+<table>
+  <tr>
+    <th width="25%">使用技術・API</th>
+    <th width="20%">ロゴ</th>
+    <th width="55%">アプリでの役割</th>
+  </tr>
+  <tr>
+    <td>
+      <div class="tech-name">Cloudinary</div>
+      <div class="tech-role">クラウド画像管理 API</div>
+    </td>
+    <td class="logo-wrapper"><img src="https://res.cloudinary.com/cloudinary/image/upload/v1/logo/for_white_bg/cloudinary_logo_for_white_bg.svg" alt="Cloudinary"></td>
+    <td class="desc">ユーザーが撮影した写真を一時的にクラウドへ保存し、AIに渡すための画像URLを生成するために使用しています。</td>
+  </tr>
+  <tr>
+    <td>
+      <div class="tech-name">Google Cloud<br>Vision API</div>
+      <div class="tech-role">AI 画像解析 API</div>
+    </td>
+    <td class="logo-wrapper">
+      <div class="logos">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Google_Cloud_logo.svg/512px-Google_Cloud_logo.svg.png" alt="Google Cloud">
+      </div>
+    </td>
+    <td class="desc">写真をAIが解析し「ランドマーク」や「写っている物」を特定。写真判定だけで自動的にスタンプを付与する仕組みの心臓部です。</td>
+  </tr>
+  <tr>
+    <td>
+      <div class="tech-name">Leaflet</div>
+      <div class="tech-role">地図描画ライブラリ</div>
+    </td>
+    <td class="logo-wrapper"><img src="https://leafletjs.com/docs/images/logo.png" alt="Leaflet"></td>
+    <td class="desc">マップ画面で、観光スポットのピン📍を立てたり、スワイプで動かせるインタラクティブな地図画面を描画しています。</td>
+  </tr>
+  <tr>
+    <td>
+      <div class="tech-name">OpenStreetMap</div>
+      <div class="tech-role">オープンソース地図データ</div>
+    </td>
+    <td class="logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Openstreetmap_logo.svg" alt="OpenStreetMap" style="max-height: 70px;"></td>
+    <td class="desc">Leafletが地図を描画する際に使っている「ベースの道路・建物の地図画像データ」です。無料で利用しています。</td>
+  </tr>
+  <tr>
+    <td>
+      <div class="tech-name">HTML5 / CSS3 /<br>Vanilla JS</div>
+      <div class="tech-role">フロントエンド言語</div>
+    </td>
+    <td class="logo-wrapper">
+      <div class="logos">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/61/HTML5_logo_and_wordmark.svg" alt="HTML5" style="max-height: 50px;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/d/d5/CSS3_logo_and_wordmark.svg" alt="CSS3" style="max-height: 50px;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/9/99/Unofficial_JavaScript_logo_2.svg" alt="JavaScript" style="max-height: 50px;">
+      </div>
+    </td>
+    <td class="desc">画面構造、デザイン、動作ロジックの中核。今回は動作が重くなるフレームワークを使わず標準技術のみで構築し、スマホでの動作を軽くしています。</td>
+  </tr>
+</table>
+
+</body>
+</html>
