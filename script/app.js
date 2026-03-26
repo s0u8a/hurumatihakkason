@@ -5,15 +5,15 @@ const GOOGLE_API_KEY = 'AIzaSyC5kzwBBS---IAAa_012ce4a2XQdQqDOjw';
 
 // 2. スポットデータ
 const spots = [
-  { id: 1, name: "本町市場", icon: "🛒", desc: "新鮮な海産物や野菜が並ぶ老舗市場。日本海の幸を堪能できる。", tags: ["グルメ", "歴史"], stamped: false, lat: 37.9175, lng: 139.0365 },
-  { id: 2, name: "白山神社", icon: "⛩️", desc: "1000年以上の歴史を持つ古町の守り神。境内の楼門は必見。", tags: ["歴史", "パワスポ"], stamped: false, lat: 37.9156, lng: 139.0412 },
-  { id: 3, name: "古町通り", icon: "🏮", desc: "江戸時代から続くメインストリート。七番町・八番町が中心。", tags: ["散策", "買い物"], stamped: false, lat: 37.9168, lng: 139.0380 },
-  { id: 4, name: "砂丘館", icon: "🏛️", desc: "旧日本銀行新潟支店長宅。文化財指定の洋館でアートを鑑賞。", tags: ["アート", "歴史"], stamped: false, lat: 37.9200, lng: 139.0350 },
-  { id: 5, name: "新潟県政記念館", icon: "🏛️", desc: "明治時代の洋風建築。国重要文化財で古町の歴史を伝える。", tags: ["歴史", "建築"], stamped: false, lat: 37.9190, lng: 139.0360 },
-  { id: 6, name: "NEXT21", icon: "🏙️", desc: "古町を代表するランドマークタワー。展望ラウンジからの景色は絶景。", tags: ["景色", "ランドマーク"], stamped: false, lat: 37.9232, lng: 139.0435 },
-  { id: 7, name: "旧齋藤家別邸", icon: "🏡", desc: "豪商の別荘。美しい庭園と近代和風建築が見どころ。", tags: ["歴史", "庭園"], stamped: false, lat: 37.9238, lng: 139.0385 },
-  { id: 8, name: "みなとぴあ", icon: "🏛️", desc: "新潟市歴史博物館。信濃川のほとりに建つレトロな洋館。", tags: ["歴史", "博物館"], stamped: false, lat: 37.9265, lng: 139.0520 },
-  { id: 9, name: "萬代橋", icon: "🌉", desc: "新潟市のシンボル。信濃川にかかる重要文化財の石造りアーチ橋。", tags: ["歴史", "ランドマーク"], stamped: false, lat: 37.9197, lng: 139.0531 }
+  { id: 1, name: "本町市場", icon: "🛒", desc: "新鮮な海産物や野菜が並ぶ老舗市場。日本海の幸を堪能できる。", tags: ["グルメ", "歴史", "食べ歩き"], stamped: false, lat: 37.9175, lng: 139.0365 },
+  { id: 2, name: "白山神社", icon: "⛩️", desc: "1000年以上の歴史を持つ古町の守り神。境内の楼門は必見。", tags: ["歴史", "パワスポ", "映え"], stamped: false, lat: 37.9156, lng: 139.0412 },
+  { id: 3, name: "古町通り", icon: "🏮", desc: "江戸時代から続くメインストリート。七番町・八番町が中心。", tags: ["散策", "買い物", "食べ歩き", "グルメ"], stamped: false, lat: 37.9168, lng: 139.0380 },
+  { id: 4, name: "砂丘館", icon: "🏛️", desc: "旧日本銀行新潟支店長宅。文化財指定の洋館でアートを鑑賞。", tags: ["アート", "歴史", "映え"], stamped: false, lat: 37.9200, lng: 139.0350 },
+  { id: 5, name: "新潟県政記念館", icon: "🏛️", desc: "明治時代の洋風建築。国重要文化財で古町の歴史を伝える。", tags: ["歴史", "建築", "映え"], stamped: false, lat: 37.9190, lng: 139.0360 },
+  { id: 6, name: "NEXT21", icon: "🏙️", desc: "古町を代表するランドマークタワー。展望ラウンジからの景色は絶景。", tags: ["景色", "ランドマーク", "映え", "グルメ"], stamped: false, lat: 37.9232, lng: 139.0435 },
+  { id: 7, name: "旧齋藤家別邸", icon: "🏡", desc: "豪商の別荘。美しい庭園と近代和風建築が見どころ。", tags: ["歴史", "庭園", "映え"], stamped: false, lat: 37.9238, lng: 139.0385 },
+  { id: 8, name: "みなとぴあ", icon: "🏛️", desc: "新潟市歴史博物館。信濃川のほとりに建つレトロな洋館。", tags: ["歴史", "博物館", "映え"], stamped: false, lat: 37.9265, lng: 139.0520 },
+  { id: 9, name: "萬代橋", icon: "🌉", desc: "新潟市のシンボル。信濃川にかかる重要文化財の石造りアーチ橋。", tags: ["歴史", "ランドマーク", "映え", "散策"], stamped: false, lat: 37.9197, lng: 139.0531 }
 ];
 
 // 3. localStorageからスタンプ状態を復元
@@ -67,12 +67,32 @@ function initMap() {
 }
 
 // 6. スポット一覧の描画
+let currentRouteTag = null; // null means show all spots
+
+function selectRoute(element, tag) {
+  document.querySelectorAll('.route-card').forEach(el => el.classList.remove('selected'));
+  if(element) element.classList.add('selected');
+  currentRouteTag = tag;
+  renderSpots('spotList');
+  
+  // 映えさんぽモードの時だけSNSシェアボタンを表示
+  const snsContainer = document.getElementById('sns-share-container');
+  if(snsContainer) {
+    snsContainer.style.display = (tag === '映え') ? 'block' : 'none';
+  }
+}
+
 function renderSpots(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
   container.innerHTML = '';
 
   spots.forEach(spot => {
+    // フィルター判定(ホーム画面のスポット一覧のみ適用)
+    if (containerId === 'spotList' && currentRouteTag && !spot.tags.includes(currentRouteTag)) {
+      return; 
+    }
+
     const div = document.createElement('div');
     div.className = 'spot-item' + (spot.stamped ? ' stamped' : '');
     div.innerHTML = `

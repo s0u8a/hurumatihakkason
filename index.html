@@ -56,27 +56,35 @@
     <div class="section">
       <div class="section-title">🥾 テーマ別ルート</div>
       <div class="route-cards">
-        <div class="route-card selected" onclick="selectRoute(this)">
+        <div class="route-card selected" onclick="selectRoute(this, null)">
+          <div class="route-card-img" style="background:#f0f8ff">🗺️</div>
+          <div class="route-card-body">
+            <div class="route-card-name">すべて</div>
+            <div class="route-card-meta">📍 全9スポット</div>
+            <div class="route-card-tag">基本ルート</div>
+          </div>
+        </div>
+        <div class="route-card" onclick="selectRoute(this, '歴史')">
           <div class="route-card-img" style="background:#FFF0F0">🏯</div>
           <div class="route-card-body">
             <div class="route-card-name">歴史めぐり</div>
-            <div class="route-card-meta">📍 5スポット・約2時間</div>
+            <div class="route-card-meta">📍 7スポット</div>
             <div class="route-card-tag">初心者向け</div>
           </div>
         </div>
-        <div class="route-card" onclick="selectRoute(this)">
+        <div class="route-card" onclick="selectRoute(this, '食べ歩き')">
           <div class="route-card-img" style="background:#FFF5E0">🍜</div>
           <div class="route-card-body">
             <div class="route-card-name">古町グルメ</div>
-            <div class="route-card-meta">📍 6スポット・約3時間</div>
+            <div class="route-card-meta">📍 3スポット</div>
             <div class="route-card-tag">食べ歩き</div>
           </div>
         </div>
-        <div class="route-card" onclick="selectRoute(this)">
+        <div class="route-card" onclick="selectRoute(this, '映え')">
           <div class="route-card-img" style="background:#F0FFF4">📸</div>
           <div class="route-card-body">
             <div class="route-card-name">映えさんぽ</div>
-            <div class="route-card-meta">📍 4スポット・約1.5時間</div>
+            <div class="route-card-meta">📍 7スポット</div>
             <div class="route-card-tag">SNS向け</div>
           </div>
         </div>
@@ -100,8 +108,15 @@
           style="background:var(--red); color:white; border:none; padding:5px 15px; border-radius:20px;">
           保存する
         </button>
-       <div id="upload-status" style="font-size: 0.8rem; margin-top: 10px; color: var(--warm-gray);"></div>
+        <div id="upload-status" style="font-size: 0.8rem; margin-top: 10px; color: var(--warm-gray);"></div>
         <img id="photo-preview" src="" style="width: 100%; border-radius: 8px; margin-top: 10px; display: none;">
+        
+        <!-- SNS Share Button (Shows only on 映えさんぽ) -->
+        <div id="sns-share-container" style="display: none; margin-top: 15px; text-align: center;">
+           <a id="sns-share-btn" href="https://twitter.com/intent/tweet?text=古町で「映えさんぽ」を楽しみながらAIスタンプ集め中！あなたも新潟・古町を巡ってみませんか？&hashtags=古町さんぽ,新潟,AIスタンプラリー,映えさんぽ" target="_blank" style="display: inline-block; background: #1DA1F2; color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; width: 100%; font-size: 0.9rem;">
+             🐦 X (Twitter) にシェアする
+           </a>
+        </div>
       </div>
     </div>
     <div class="bottom-space"></div>
@@ -207,7 +222,7 @@
     <div class="bottom-space"></div>
   </div>
 
-  <script src="script/app.js?v=6"></script>
+  <script src="script/app.js?v=7"></script>
 </body>
 
 </html>
