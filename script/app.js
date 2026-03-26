@@ -258,10 +258,10 @@ async function analyzeWithAI(imageUrl) {
       const keywordsShrine = ["shrine", "temple", "place of worship", "shinto", "shinto shrine", "torii", "religion"]; // 2: 白山神社
       const keywordsMarket = ["market", "marketplace", "food", "grocery", "bazaar", "supermarket", "stall", "fish", "vegetable", "produce"]; // 1: 本町市場
       const keywordsStreet = ["street", "alley", "road", "pedestrian", "town", "neighborhood", "arcade", "shopping mall", "retail", "shopping", "promenade", "corridor", "city", "building", "architecture", "structure", "plaza"]; // 3: 古町通り
-      const keywordsSakyukan = ["house", "mansion", "residence", "home", "art gallery", "estate", "property", "cottage", "roof"]; // 4: 砂丘館
+      const keywordsSakyukan = ["art gallery", "mansion", "modern", "western", "design", "museum", "bank", "cottage", "interior", "house", "residence", "home"]; // 4: 砂丘館
       const keywordsPrefectural = ["government", "assembly", "parliament", "western architecture", "classic architecture", "courthouse", "palace"]; // 5: 新潟県政記念館
       const keywordsNext21 = ["skyscraper", "condominium", "tower block", "high-rise", "tower", "observatory", "tall building"]; // 6: NEXT21
-      const keywordsSaito = ["garden", "japanese garden", "courtyard", "tea house", "botanical", "villa", "japanese architecture", "historic site", "tatami", "shoji"]; // 7: 旧齋藤家別邸
+      const keywordsSaito = ["plant", "tree", "wood", "nature", "garden", "japanese garden", "courtyard", "tea house", "botanical", "villa", "japanese architecture", "historic site", "tatami", "shoji", "roof", "estate", "property", "bamboo", "house", "residence"]; // 7: 旧齋藤家別邸
       const keywordsMinatopia = ["museum", "brick", "exhibition", "history", "customs"]; // 8: みなとぴあ
       const keywordsBridge = ["bridge", "arch bridge", "river", "water", "infrastructure", "skyline"]; // 9: 萬代橋
 
