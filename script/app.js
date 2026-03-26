@@ -253,11 +253,11 @@ async function analyzeWithAI(imageUrl) {
 
       // 各スポットの関連キーワード（甘めの判定ですが、他と被りやすい汎用単語は避ける）
       const keywordsShrine = ["shrine", "temple", "place of worship", "shinto", "shinto shrine", "torii", "religion"]; // 2: 白山神社
-      const keywordsMarket = ["market", "marketplace", "food", "grocery", "bazaar", "shopping", "retail", "supermarket"]; // 1: 本町市場
-      const keywordsStreet = ["street", "alley", "road", "pedestrian", "town", "neighborhood"]; // 3: 古町通り
+      const keywordsMarket = ["market", "marketplace", "food", "grocery", "bazaar", "supermarket", "stall", "fish", "vegetable", "produce"]; // 1: 本町市場
+      const keywordsStreet = ["street", "alley", "road", "pedestrian", "town", "neighborhood", "arcade", "shopping mall", "retail", "shopping", "promenade", "corridor"]; // 3: 古町通り
       const keywordsSakyukan = ["house", "villa", "mansion", "residence", "home", "art gallery", "estate", "property", "cottage", "japanese architecture", "historic site", "roof"]; // 4: 砂丘館
       const keywordsPrefectural = ["government", "assembly", "parliament", "western architecture", "classic architecture", "courthouse", "palace"]; // 5: 新潟県政記念館
-      const keywordsNext21 = ["skyscraper", "metropolitan area", "condominium", "tower block", "commercial building", "city", "sky", "high-rise", "tower"]; // 6: NEXT21
+      const keywordsNext21 = ["skyscraper", "condominium", "tower block", "high-rise", "tower", "observatory", "tall building"]; // 6: NEXT21
       const keywordsSaito = ["garden", "japanese garden", "courtyard", "tea house", "botanical"]; // 7: 旧齋藤家別邸
       const keywordsMinatopia = ["museum", "brick", "exhibition", "history", "customs"]; // 8: みなとぴあ
       const keywordsBridge = ["bridge", "arch bridge", "river", "water", "infrastructure", "skyline"]; // 9: 萬代橋
@@ -284,12 +284,12 @@ async function analyzeWithAI(imageUrl) {
       } else if (descriptions.some(d => keywordsNext21.includes(d))) {
         aiMessage = "🏙️ NEXT21ですね！古町のランドマークとしてスタンプを押します！";
         targetSpotId = 6;
+      } else if (descriptions.some(d => keywordsStreet.includes(d))) {
+        aiMessage = "🏮 古町通りですね！アーケードが続くメインストリートですね！";
+        targetSpotId = 3;
       } else if (descriptions.some(d => keywordsMarket.includes(d))) {
         aiMessage = "🛒 本町市場ですね！活気があって素敵な一枚です！";
         targetSpotId = 1;
-      } else if (descriptions.some(d => keywordsStreet.includes(d))) {
-        aiMessage = "🏮 古町通りですね！風情ある街並みですね！";
-        targetSpotId = 3;
       }
     }
 
