@@ -119,13 +119,16 @@ function updateUI() {
     
     // 写真URLがあればその写真を表示し、なければアイコンを表示する
     const mediaHtml = spot.imageUrl 
-      ? `<div style="height: 60px; margin: 5px 0; border-radius: 8px; overflow: hidden;"><img src="${spot.imageUrl}" style="width: 100%; height: 100%; object-fit: cover;"></div>` 
-      : `<div class="stamp-emoji">${spot.stamped ? spot.icon : '❓'}</div>`;
+  ? `<div style="width: 100%; flex: 1; border-radius: 8px; overflow: hidden; margin: 4px 0; min-height: 0;">
+      <img src="${spot.imageUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+    </div>`
+  : `<div class="stamp-emoji">${spot.stamped ? spot.icon : '❓'}</div>`;
 
     cell.innerHTML = `
       <div class="stamp-number">${i + 1}</div>
       ${mediaHtml}
       <div class="stamp-name">${spot.stamped ? spot.name : '未取得'}</div>
+      <div class="stamp-desc">${spot.stamped ? spot.desc : 'このスポットのスタンプをゲットしよう！'}</div>
     `;
     grid.appendChild(cell);
   });

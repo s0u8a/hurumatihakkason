@@ -361,6 +361,7 @@ header {
   transition: all 0.3s;
   position: relative;
   overflow: hidden;
+  padding: 24px 8px 20px;
 }
 
 .stamp-cell.earned {
@@ -377,7 +378,11 @@ header {
   font-weight: 700;
 }
 
-.stamp-emoji { font-size: 1.8rem; margin-bottom: 4px; }
+.stamp-emoji {
+  font-size: 2.8rem;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
 
 .stamp-name {
   font-size: 0.6rem;
@@ -385,6 +390,19 @@ header {
   text-align: center;
   padding: 0 4px;
   font-weight: 700;
+  flex-shrink: 0;
+}
+
+.stamp-desc {
+  font-size: 0.68rem;
+  color: var(--warm-gray);
+  text-align: center;
+  padding: 4px 6px 0;
+  line-height: 1.5;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 .stamp-number {
