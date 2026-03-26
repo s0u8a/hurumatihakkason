@@ -222,8 +222,8 @@ async function analyzeWithAI(imageUrl) {
       const name = landmarks[0].description.toLowerCase(); // 修正: landmarksも配列なので最初の要素の名前を見る
       console.log("AIが見つけた場所:", name); // 開発者ツールで何て出てるか確認できます
 
-      if (name.includes("next") || name.includes("21") || name.includes("city hall")) {
-        aiMessage = "🏙️ NEXT21ですね！古町のシンボルです。";
+      if (name.includes("next") || name.includes("next21")) {
+        aiMessage = "🏙️ NEXT21ですね！古町のランドマークとしてスタンプを押します！";
         targetSpotId = 6;
       } else if (name.includes("hakusan") || name.includes("shrine")) {
         aiMessage = "⛩️ 白山神社ですね！歴史ある風景です。";
@@ -281,15 +281,15 @@ async function analyzeWithAI(imageUrl) {
       } else if (descriptions.some(d => keywordsBridge.includes(d))) {
         aiMessage = "🌉 萬代橋ですね！美しいアーチ橋の姿が素敵です！";
         targetSpotId = 9;
-      } else if (descriptions.some(d => keywordsNext21.includes(d))) {
-        aiMessage = "🏙️ NEXT21ですね！古町のランドマークとしてスタンプを押します！";
-        targetSpotId = 6;
       } else if (descriptions.some(d => keywordsStreet.includes(d))) {
         aiMessage = "🏮 古町通りですね！アーケードが続くメインストリートですね！";
         targetSpotId = 3;
       } else if (descriptions.some(d => keywordsMarket.includes(d))) {
         aiMessage = "🛒 本町市場ですね！活気があって素敵な一枚です！";
         targetSpotId = 1;
+      } else if (descriptions.some(d => keywordsNext21.includes(d))) {
+        aiMessage = "🏙️ NEXT21ですね！古町のランドマークとしてスタンプを押します！";
+        targetSpotId = 6;
       }
     }
 
