@@ -385,7 +385,7 @@ header {
 }
 
 .stamp-name {
-  font-size: 0.8rem; /* 少し小さく */
+  font-size: 1.2rem; /* 少し小さく */
   color: var(--warm-gray);
   text-align: center;
   padding: 0 4px;
@@ -395,7 +395,7 @@ header {
 
 .stamp-desc {
   display: none; /* ← モーダルで表示するため一覧からは隠す */
-  font-size: 0.6rem;
+  font-size: 1.2rem;
   color: var(--warm-gray);
   text-align: center;
   padding: 2px 4px 0;
