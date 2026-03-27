@@ -191,6 +191,17 @@
     <div class="bottom-space"></div>
   </div>
 
+  <!-- スポット詳細モーダル -->
+  <div id="spot-modal" class="modal-overlay" onclick="closeSpotModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeSpotModal()">✕</button>
+      <div id="modal-image" class="modal-image-area"></div>
+      <div id="modal-name" class="modal-title">スポット名</div>
+      <div id="modal-tags" class="spot-tags" style="justify-content:center; margin-bottom:12px"></div>
+      <div id="modal-desc" class="modal-desc">解説テキスト</div>
+    </div>
+  </div>
+
   <script src="script/app.js?v=13"></script>
 </body>
 

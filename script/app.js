@@ -146,6 +146,7 @@ function updateUI() {
   spots.forEach((spot, i) => {
     const cell = document.createElement('div');
     cell.className = 'stamp-cell' + (spot.stamped ? ' earned' : '');
+    cell.onclick = () => openSpotModal(spot.id); // モーダルを開く処理を追加
     
     // 写真URLがあればその写真を表示し、なければアイコンを表示する
     const mediaHtml = spot.imageUrl 
@@ -488,4 +489,41 @@ function useCoupon(id) {
     renderSpots('spotListMap');
     updateUI();
   }
+}
+
+// --- モーダル制御 ---
+function openSpotModal(spotId) {
+  const spot = spots.find(s => s.id === spotId);
+  if (!spot) return;
+
+  const modal = document.getElementById('spot-modal');
+  const imgArea = document.getElementById('modal-image');
+  const nameEl = document.getElementById('modal-name');
+  const tagsEl = document.getElementById('modal-tags');
+  const descEl = document.getElementById('modal-desc');
+
+  if (spot.stamped) {
+    if (spot.imageUrl) {
+      imgArea.innerHTML = `<img src="${spot.imageUrl}" alt="${spot.name}">`;
+    } else {
+      imgArea.innerHTML = spot.icon;
+    }
+    nameEl.textContent = spot.name;
+    tagsEl.innerHTML = spot.tags.map(t => `<span class="spot-tag">${t}</span>`).join('');
+    descEl.textContent = spot.desc;
+  } else {
+    imgArea.innerHTML = '❓';
+    nameEl.textContent = '未取得スポット';
+    // ヒントとしてタグだけ見せる
+    tagsEl.innerHTML = spot.tags.map(t => `<span class="spot-tag">${t}</span>`).join('');
+    descEl.textContent = '「写真を選択」からこの場所の写真をアップロードして、スタンプと解説を解放しよう！';
+  }
+
+  modal.classList.add('active');
+}
+
+function closeSpotModal(e) {
+  if (e && e.target !== document.getElementById('spot-modal')) return;
+  const modal = document.getElementById('spot-modal');
+  modal.classList.remove('active');
 }
